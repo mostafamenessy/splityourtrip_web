@@ -1,0 +1,366 @@
+.App {
+  text-align: center;
+}
+
+.App-logo {
+  height: 40vmin;
+  pointer-events: none;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .App-logo {
+    animation: App-logo-spin infinite 20s linear;
+  }
+}
+
+.App-header {
+  background-color: #282c34;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-size: calc(10px + 2vmin);
+  color: white;
+}
+
+.App-link {
+  color: #61dafb;
+}
+
+@keyframes App-logo-spin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.isVisible {
+  visibility: visible !important;
+}
+
+.active-map {
+  border: 2px solid #2D71FE !important;
+  border-radius: 17px !important;
+}
+
+.pointer {
+  cursor: pointer !important;
+  /* list-style-type: none; */
+}
+
+.PhoneInputCountry .PhoneInputInput {
+  border: none !important;
+  border-left: 1px solid !important;
+}
+
+.layout-wrap .layout-wrap-inner .section-content-right {
+  padding-top: 0px;
+}
+
+
+@media only screen and (min-width: 1001px) {
+
+  .booking-image {
+    min-width: 310px;
+    max-width: 310px;
+    min-height: 200px;
+    max-height: 200px;
+  }
+}
+
+@media only screen and (max-width: 992px) {
+
+  .mob-dash {
+    margin-top: 40px;
+  }
+}
+
+.min_box_size {
+  min-height: 100vh;
+}
+
+.image-container {
+  position: relative;
+  display: inline-block;
+}
+
+.image {
+  display: block;
+  height: auto;
+}
+
+.overlay {
+  position: absolute;
+  top: 5px;
+  left: 5px;
+  border-radius: 3px;
+  font-size: 0.9em;
+}
+
+.PayStack {
+  width: 100%;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background-color: rgba(85, 83, 83, 0.233);
+  z-index: 999;
+  position: fixed;
+  top: 0px;
+  left: 0px;
+}
+
+.PayStack2 {
+  width: 20%;
+  background-color: white;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px 0px;
+  border-radius: 10px;
+}
+
+.PayStackButton {
+  background-color: pink;
+  font-size: 25px;
+  border-radius: 5px;
+  padding: 8px 20px;
+}
+
+
+@media (max-width: 991px) {
+  .widget-tabs.style-1 .widget-menu-tab {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    /* display: flex;
+    justify-content: center; */
+    margin-bottom: 30px;
+  }
+
+  .lang-drop {
+    height: 98px !important;
+  }
+
+  .remove-mov-tp {
+    padding-top: 0px !important;
+  }
+
+  .gal-img-top {
+    padding-top: 7rem;
+  }
+
+}
+
+@media (min-width: 992px) {
+  .widget-tabs.style-1 .widget-menu-tab {
+    display: -webkit-box;
+    display: -moz-box;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    justify-content: center;
+    margin-bottom: 30px;
+  }
+}
+
+.lang-drop {
+  height: 150px;
+}
+
+@media(max-width:537px) {
+  .mobile-facility {
+    display: flex;
+    justify-content: space-between;
+  }
+}
+
+@media(max-width:837px) {
+  .rdrCalendarWrapper {
+    color: #000000;
+    width: 100%;
+    font-size: 12px;
+  }
+}
+
+@media(max-width:405px) {
+  .rdrMonth {
+    width: 24.667em !important;
+    padding: 0 2.833em 1.666em 0.833em !important;
+  }
+}
+
+@media(max-width:827px) {
+  .mob-profile {
+    align-items: center !important;
+    justify-content: center !important;
+    display: flex !important;
+    flex-direction: column !important;
+  }
+
+  .chatbox2 {
+    width: 50% !important;
+  }
+}
+
+.m-bottom {
+  margin-bottom: 5px !important;
+}
+
+.span-text {
+  font-size: 13px !important;
+}
+
+.bdr-red {
+  border-color: red !important;
+}
+
+@media (max-width: 388px) {
+  .mob-guest {
+    flex-wrap: wrap;
+    flex-direction: column !important;
+  }
+
+  .mob-guest-had {
+    width: 100% !important;
+  }
+
+  .mob-guest-count {
+    width: 100% !important;
+    padding: 12px 40px !important;
+    background-color: #F9F9F9 !important;
+    border: 0 !important;
+    text-align: center;
+    justify-content: space-around !important;
+    display: flex !important;
+    border-radius: 10px;
+  }
+
+  .chatbox2 {
+    width: 100% !important;
+  }
+}
+
+
+.empty-message {
+  color: #b3bfe0 !important;
+}
+
+/* <================== chatBox Section =============>> */
+/* Main overlay that covers the entire screen */
+.chatbox {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+}
+
+.chatbox2 {
+  width: 28%;
+  background-color: white;
+  padding: 20px;
+  border-radius: 20px 20px 0 0;
+}
+
+.MuiDateRangeCalendar-root>div:nth-child(1) {
+  display: none;
+}
+
+.MuiPickersCalendarHeader-labelContainer {
+  font-size: 2rem !important;
+}
+
+.MuiButtonBase-root,
+.MuiTypography-root {
+  font-size: 11px !important;
+}
+
+.MuiSvgIcon-root {
+  height: 2rem !important;
+  width: 2rem !important;
+}
+
+.button-chat {
+  font-size: 18px !important;
+  padding: 8px 26px !important;
+}
+
+.modal .modal-dialog .modal-content2 {
+  max-width: 500px !important;
+}
+
+.place-text {
+  color: #000000;
+}
+
+.place-text::placeholder {
+  color: #bab5b5 !important;
+}
+
+@media (min-width: 1200px) {
+  .MuiPickersLayout-root {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+}
+
+.MuiPickersToolbar-root,
+.MuiDialogActions-root {
+  display: none !important;
+}
+
+.modal-headers {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  border: none !important;
+}
+
+.form-button {
+  padding: 12px !important;
+  font-size: 15px !important;
+  border-radius: 15px !important;
+}
+
+input[type="number"]::-webkit-outer-spin-button,
+input[type="number"]::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.PhoneInputCountryIcon {
+  display: none;
+}
+
+.PhoneInputInput {
+  background-color: initial;
+  outline: none;
+}
+
+.css-17f9e7e-MuiTypography-root-MuiDayCalendar-weekDayLabel,
+.css-1exd0lh-MuiButtonBase-root-MuiPickersDay-root-MuiDateRangePickerDay-day,
+.css-1q11vqh-MuiPickersDay-root-MuiDateRangePickerDay-day {
+  width: 40px !important;
+  height: 40px !important;
+}
+
+.css-u3u290-MuiPickersSlideTransition-root-MuiDayCalendar-slideTransition {
+    min-height: 290px !important;
+}
+
+.css-1nxbkmn-MuiPickersCalendarHeader-root {
+  padding-left: 0px !important;
+  padding-right: 0px !important;
+}
