@@ -17,6 +17,7 @@ import Chat from '../component/Chat';
 import axios from 'axios';
 import OutsideClickHandler from 'react-outside-click-handler';
 import { showToast } from '../showTost';
+import { UserProfileSec } from './Dashboard';
 
 const TabHeader = ({ tabList }) => {
     return (
@@ -1073,8 +1074,8 @@ function AddProparty() {
 
 
     useEffect(() => {
-        const baseSidebarData = [{ title: 'Dashboard' }, ...userDashboardDetails];
-        const adminSidebarData = [{ title: 'Dashboard' }, ...userDashboardDetails, { title: 'Chat' }]
+        const baseSidebarData = [{ title: 'Dashboard' }, ...userDashboardDetails, { title: 'Profile' }];
+        const adminSidebarData = [{ title: 'Dashboard' }, ...userDashboardDetails, { title: 'Profile' }, { title: 'Chat' }]
 
         if (isAdmin) {
             setSidebarData(adminSidebarData);
@@ -1523,6 +1524,10 @@ function AddProparty() {
                                         showReceiptTab={showReceiptTab}
                                         handleBackButton={handleBackButton}
                                     />
+                                )}
+
+                                {selectedTab === 'Profile' && (
+                                    <UserProfileSec />
                                 )}
 
                                 {selectedTab === 'My Payout' && (
