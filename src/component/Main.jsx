@@ -11,8 +11,15 @@ import { useTranslation } from 'react-i18next';
 import { ValidateModal } from '../component/ValidateModal';
 import axios from 'axios';
 import OutsideClickHandler from 'react-outside-click-handler';
+import { useDocumentMeta } from '../useDocumentMeta';
 
 function Main() {
+
+    useDocumentMeta({
+        title: 'SplitYourTrip | Rental Homes, Apartments & Villas for Rent in Egypt',
+        description: 'Find and book verified rental apartments, villas and homes across Egypt with SplitYourTrip. Browse listings in New Cairo, Madinaty, the New Administrative Capital and more, split the cost, split the trip.',
+        path: '/',
+    });
 
     const [showModal, setShowModal] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -32,7 +39,8 @@ function Main() {
         setCurrentPage,
         baseUrl,
         setTabsList,
-        setSelectedCountryId
+        setSelectedCountryId,
+        setUserCurrency
     } = useContextex();
 
     const navigate = useNavigate();
@@ -91,9 +99,13 @@ function Main() {
             });
             if (response?.data?.ResponseCode === '200') {
                 // console.log("u_home_data.php", response);
-                const { Catlist, Featured_Property, show_add_property, wallet } = response?.data?.HomeData
+                const { Catlist, Featured_Property, show_add_property, wallet, currency } = response?.data?.HomeData
                 localStorage.setItem('addPropertyShow', show_add_property)
                 localStorage.setItem("avblWalletBlnc", wallet);
+                if (currency) {
+                    setUserCurrency(currency);
+                    localStorage.setItem('siteCurrency', currency);
+                }
                 setTabsList(Catlist);
                 setFeaturedPropList(Featured_Property || []);
                 setFeatured(Featured_Property || []);
@@ -250,16 +262,10 @@ export default Main
 
 export const FlateCities = ({ featuredData }) => {
 
-    const { baseUrl, setProductDetailId } = useContextex();
+    const { baseUrl, setProductDetailId, userCurrency } = useContextex();
     const { t } = useTranslation();
 
     const navigate = useNavigate();
-
-
-    const loginUser = localStorage.getItem("loginUser");
-    if (loginUser) {
-        var { currency } = JSON.parse(loginUser);
-    }
 
     useEffect(() => {
         if (window.Swiper) {
@@ -328,8 +334,10 @@ export const FlateCities = ({ featuredData }) => {
                                         {featuredData?.map((item) => (
                                             <div className={`swiper-slide pointer col-xs-8 col-sm-6 col-md-4 col-lg-2`} key={item?.id} onClick={() => handleCountryClick(item)} style={{ width: '324.8px', marginRight: '25px' }}>
                                                 <div className="cities-item bg_color style-2 wow fadeInUp">
-                                                    <img src={`${baseUrl}${item?.image}`} className='bg_img' alt={item?.title} />
-                                                    <button className='buy_button bg-white'>{t("BUY")}</button>
+                                                    <img src={`${baseUrl}${item?.image}`} className='bg_img' alt={item?.title} loading='lazy' decoding='async' />
+                                                    {item?.buyorrent === '2' && (
+                                                        <button className='buy_button bg-white'>{t("BUY")}</button>
+                                                    )}
                                                     <div className="content">
                                                         <h4 className='trim_title'>{item?.title}</h4>
                                                         <div className="d-flex items-center gap-1">
@@ -354,7 +362,7 @@ export const FlateCities = ({ featuredData }) => {
                                                             </div>
                                                         </div>
 
-                                                        <h5 style={{ color: "white" }}>{currency ? currency : "$"}{item.price}</h5>
+                                                        <h5 style={{ color: "white" }}>{userCurrency}{item.price}</h5>
                                                     </div>
                                                 </div>
                                             </div>
@@ -481,7 +489,7 @@ export const TabsCard = () => {
                             <div className="list-tags">
                                 <p className="tags-item for-sell">{item?.buyorrent === '2' ? 'FOR BUY' : `⭐${item.rate}`}</p>
                             </div>
-                            <img className="w-full" style={{ minHeight: '400px', maxHeight: '400px' }} src={`${baseUrl}${item?.image}`} alt={item?.title} />
+                            <img className="w-full" style={{ minHeight: '400px', maxHeight: '400px' }} src={`${baseUrl}${item?.image}`} alt={item?.title} loading='lazy' decoding='async' />
                         </div>
 
                         <div className="content">
@@ -515,7 +523,7 @@ export const TabsCard = () => {
                                     </div>
                                 </div>
 
-                                <div className="price">{userCurrency ? userCurrency : '$'}{item.price}{item?.buyorrent === 1 && ` /night`}</div>
+                                <div className="price">{userCurrency ? userCurrency : '$'}{item.price}{item?.buyorrent === '1' && ` /night`}</div>
                             </div>
 
                         </div>
@@ -613,12 +621,12 @@ export const SearchField = () => {
                                                 <div className="item1" >
                                                     <div>
                                                         <div className="image">
-                                                            <img src={`${baseUrl}${item.image}`} alt={item.title} />
+                                                            <img src={`${baseUrl}${item.image}`} alt={item.title} loading='lazy' decoding='async' />
                                                         </div>
                                                         <p>{item.title}</p>
                                                     </div>
                                                     <div className="text">
-                                                        {item?.buyorrent === 2 ? 'BUY' : `⭐${item.rate}`}
+                                                        {item?.buyorrent === '2' ? 'BUY' : `⭐${item.rate}`}
                                                     </div>
                                                 </div>
                                             </li>

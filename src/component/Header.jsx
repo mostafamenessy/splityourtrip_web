@@ -7,6 +7,7 @@ import { useAuth, useContextex } from '../context/useContext';
 import LoginPage from '../component/LoginPage';
 import { useTranslation } from 'react-i18next';
 import { IconMenu2 } from '@tabler/icons-react';
+import Logo from './Logo';
 
 function Header() {
     const navigate = useNavigate();
@@ -63,9 +64,9 @@ function Header() {
                         <div id="site-logo pointer">
                             <p className='cursor-pointer' rel="home">
                                 {currentPage === 'home' ? (
-                                    <img id="logo-header" className='pointer w-50 h-50 ' onClick={handleHome} src="../assets/icon/logo-text.png" alt="" />
+                                    <Logo id="logo-header" variant="light" onClick={handleHome} />
                                 ) : (
-                                    <img id="logo-header-mobile " className='pointer w-50 h-50' onClick={handleHome} src="../assets/icon/logo_black.png" alt="" />
+                                    <Logo id="logo-header-mobile" variant="dark" onClick={handleHome} />
                                 )}
                             </p>
                         </div>
@@ -118,7 +119,7 @@ function Header() {
                         <div className="container-fluid">
                             <div id="site-logo pointer" className='navbar-brand text-black'>
                                 <p className='cursor-pointer' rel="home">
-                                    <img id="logo-header-mobile " className='pointer w-50 h-50' onClick={handleHome} src="./assets/icon/logo_black.png" alt="" />
+                                    <Logo id="logo-header-mobile" variant="dark" onClick={handleHome} />
                                 </p>
                             </div>
 

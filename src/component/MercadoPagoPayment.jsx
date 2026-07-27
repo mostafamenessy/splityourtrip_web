@@ -2,6 +2,7 @@
 /* jshint esversion: 8 */
 
 import  { useEffect } from 'react';
+import { loadExternalScript } from '../loadExternalScript';
 
 export const MercadoPagoPayment = ({ product_amount, product_name, attributes }) => {
   useEffect(() => {
@@ -34,8 +35,10 @@ export const MercadoPagoPayment = ({ product_amount, product_name, attributes })
       });
     };
 
-    initializePayment();
-  }, [product_amount, product_name]);
+    loadExternalScript('https://sdk.mercadopago.com/js/v2')
+      .then(initializePayment)
+      .catch((error) => console.error(error.message));
+  }, [product_amount, product_name, attributes]);
 
   return null;
 };

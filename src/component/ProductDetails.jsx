@@ -17,6 +17,7 @@ import Chat from '../component/Chat';
 import Calendar from '../component/Calender';
 import axios from 'axios';
 import { showToast } from '../showTost';
+import { useDocumentMeta } from '../useDocumentMeta';
 
 const iconStyle = {
     color: 'red',
@@ -78,13 +79,25 @@ export const ProductDetails = () => {
         otherUserGender: ''
     });
 
-    const { productDetailId, setProductDetailId, setBookedProductData, baseUrl, setCurrentPage, isUserId, token, selectedId, selectedCountryId, userCurrency, setBookedUserData, setBookedOtherUserData, bookedOtherUserData, setOtherUserGender, otherUserGender } = useContextex();
+    const { productDetailId, setProductDetailId, setBookedProductData, baseUrl, setCurrentPage, isUserId, token, selectedId, selectedCountryId, userCurrency, setBookedUserData, setBookedOtherUserData, bookedOtherUserData, setOtherUserGender, otherUserGender, setLoginModal } = useContextex();
     const { t } = useTranslation();
 
     const proid = localStorage.getItem('pid');
     const pid = useParams();
     const formatedText = localStorage.getItem('formattedText');
     const navigate = useNavigate();
+
+    const propertyDetails = categoriesList?.propetydetails;
+    useDocumentMeta({
+        title: propertyDetails?.title
+            ? `${propertyDetails.title} - Rental in ${propertyDetails?.city || 'Egypt'} | SplitYourTrip`
+            : undefined,
+        description: propertyDetails?.description
+            ? propertyDetails.description.slice(0, 160)
+            : undefined,
+        image: propertyDetails?.image?.[0]?.image ? `${baseUrl}${propertyDetails.image[0].image}` : undefined,
+        path: pid?.pid ? `/properties/${pid.pid}` : undefined,
+    });
 
     useEffect(() => {
         // Fetch country data when component mounts or isUserId changes
@@ -114,6 +127,41 @@ export const ProductDetails = () => {
             setProductDetailId(proid);
         }
     }, [productDetailId, formatedText])
+
+    // Resolve the property purely from the URL when there's no prior in-app
+    // navigation state to fall back on - e.g. a search engine crawler, a
+    // bookmark, or a link shared outside the app. Without this, direct visits
+    // to /properties/:slug never load (productDetailId stays empty forever),
+    // which would keep every individual listing out of search results.
+    const slugify = (text) => (text || '').replace(/[\s_-]+/g, '-').toLowerCase();
+    useEffect(() => {
+        if (productDetailId || !pid?.pid) return;
+
+        const resolveIdFromSlug = async () => {
+            try {
+                const response = await axios.post(`${baseUrl}user_api/u_cat_wise_property.php?`, {
+                    uid: isUserId || '0',
+                    cid: 0,
+                    country_id: selectedCountryId || 1,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const list = response?.data?.Property_cat || [];
+                const match = list.find((item) => slugify(item?.title) === slugify(pid.pid));
+                if (match?.id) {
+                    setProductDetailId(match.id);
+                    localStorage.setItem('pid', match.id);
+                    localStorage.setItem('formattedText', pid.pid);
+                }
+            } catch (err) {
+                console.error(err.message);
+            }
+        };
+
+        resolveIdFromSlug();
+    }, [productDetailId, pid?.pid, baseUrl, isUserId, selectedCountryId, setProductDetailId]);
 
 
     useEffect(() => {
@@ -424,6 +472,12 @@ export const ProductDetails = () => {
     const handleBook = (event) => {
 
         event.preventDefault();
+
+        if (!isUserId || !token) {
+            setLoginModal(true);
+            return;
+        }
+
         updateUserData();
 
         if (activeTab === 'Book For Other') {
@@ -552,7 +606,7 @@ export const ProductDetails = () => {
                                         </div>
                                         <div>
                                             <div className="square">{categoriesList?.propetydetails?.sqrft} /sq ft</div>
-                                            <div className="price">{userCurrency}{categoriesList?.propetydetails?.price}{categoriesList?.propetydetails?.buyorrent === 1 && ` /night`}</div>
+                                            <div className="price">{userCurrency}{categoriesList?.propetydetails?.price}{categoriesList?.propetydetails?.buyorrent === '1' && ` /night`}</div>
                                         </div>
                                     </div>
 
@@ -610,7 +664,7 @@ export const ProductDetails = () => {
                                             </div>
                                             <div className="item wow fadeInUp" data-wow-delay="0.1s">
                                                 <div className="text">{t('Property Status')}:</div>
-                                                <p>{`For ${categoriesList?.propetydetails?.buyorrent === 2 ? 'Buy' : 'Sale'}`}</p>
+                                                <p>{categoriesList?.propetydetails?.buyorrent === '1' ? t('For Rent') : t('For Sale')}</p>
                                             </div>
 
                                         </div>
@@ -714,7 +768,7 @@ export const ProductDetails = () => {
                                         </div>
                                         <div className="person wow fadeInUp">
                                             <div className="image">
-                                                <img src={`${baseUrl}${categoriesList?.propetydetails?.owner_image}`} alt="" />
+                                                <img src={`${baseUrl}${categoriesList?.propetydetails?.owner_image}`} alt="" loading='lazy' decoding='async' />
                                             </div>
                                             <div className="content w-100 ">
                                                 <div className="name">
@@ -747,7 +801,7 @@ export const ProductDetails = () => {
                                         {latitude && longitude && (
                                             <div className="wrap-map-v1 mt-[5px]">
                                                 <GoogleMapReact
-                                                    bootstrapURLKeys={{ key: "AIzaSyA2v7oamtvcDZ7IOCc3ZKZcew4fDlGBgBU" }}
+                                                    bootstrapURLKeys={{ key: "AIzaSyBFWn7qoRevZBlVRT04huF4TSmiVtliep8" }}
                                                     defaultCenter={defaultProps?.center}
                                                     defaultZoom={defaultProps?.zoom}
                                                     options={{ gestureHandling: 'none' }}
@@ -784,7 +838,7 @@ export const ProductDetails = () => {
                                                     <li className="wow fadeInUp" key={index}>
                                                         <div className="image">
                                                             {item?.user_img ? (
-                                                                <img className='h-100' src={`${baseUrl}${item?.user_img}`} alt="" />
+                                                                <img className='h-100' src={`${baseUrl}${item?.user_img}`} alt="" loading='lazy' decoding='async' />
                                                             ) : (
                                                                 <img src="../assets/icon/profile-default.png" alt="default profile" />
                                                             )}
@@ -813,8 +867,7 @@ export const ProductDetails = () => {
                                 </div>
                             </div>
 
-                            {isUserId && token && (
-
+                            {
                                 <div className="col-xl-4">
                                     {categoriesList?.propetydetails?.buyorrent === '1' && (
                                         <>
@@ -1022,7 +1075,7 @@ export const ProductDetails = () => {
 
                                 </div>
 
-                            )}
+                            }
 
                         </div>
 

@@ -8,18 +8,30 @@ import { useLocation, useNavigate } from 'react-router-dom';
 import $ from 'jquery';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
+import { useDocumentMeta } from '../useDocumentMeta';
 
 function AllProduct() {
 
     const { t } = useTranslation();
 
-    const { setCurrentPage, tabCardData, baseUrl, userCurrency, selectedId, setSelectedId, setTabCardData, isUserId, setProductDetailId, setIsLikedOrNot } = useContextex();
+    const { setCurrentPage, tabCardData, baseUrl, userCurrency, selectedId, setSelectedId, setTabCardData, isUserId, setProductDetailId, setIsLikedOrNot, tabsList: contextTabsList, selectedCountryId: contextSelectedCountryId } = useContextex();
+
+    useDocumentMeta({
+        title: 'All Rental Listings in Egypt | SplitYourTrip',
+        description: 'Browse all available rental apartments, villas and homes across Egypt on SplitYourTrip. Filter by property type and find your perfect stay.',
+        path: '/product-all',
+    });
 
     const [loading, setLoading] = useState(true);
     const [data, setData] = useState([]);
 
     const Location = useLocation();
-    const { tabsList, selectedCountryId } = Location.state;
+    // Location.state is only set when navigating in-app via the "See All Listing"
+    // button. Direct visits (bookmark, shared link, search engine crawler) land
+    // here with no state, so fall back to the same data Main.jsx already loads
+    // into context on every app load.
+    const tabsList = Location.state?.tabsList ?? contextTabsList;
+    const selectedCountryId = Location.state?.selectedCountryId ?? contextSelectedCountryId;
 
     useEffect(() => {
         fetchCountryDataAsync();
@@ -139,13 +151,13 @@ function AllProduct() {
                                             }}>
                                                 <div className="image">
                                                     <div className="list-tags">
-                                                        <p className="tags-item for-sell">{item?.buyorrent === 2 ? 'FOR BUY' : `⭐${item.rate}`}</p>
+                                                        <p className="tags-item for-sell">{item?.buyorrent === '2' ? 'FOR BUY' : `⭐${item.rate}`}</p>
                                                     </div>
                                                     <div className=" arrow-style-1 pagination-style-1">
                                                         <div className="">
                                                             <div className="">
                                                                 <div className="">
-                                                                    <img style={{ minHeight: '400px', maxHeight: '400px' }} src={`${baseUrl}${item?.image}`} alt={item?.title} />
+                                                                    <img style={{ minHeight: '400px', maxHeight: '400px' }} src={`${baseUrl}${item?.image}`} alt={item?.title} loading='lazy' decoding='async' />
                                                                 </div>
                                                             </div>
                                                         </div>
@@ -155,7 +167,7 @@ function AllProduct() {
                                                 <div className="content" >
                                                     <div className="mb-[10px] flex items-center justify-between w-full gap-[5px] overflow-hidden">
                                                         <p className='whitespace-nowrap over-hidden overflow-ellipsis'>{item.title.substring(0, 35)}</p>
-                                                        <div className="price">{userCurrency ? userCurrency : '$'}{item.price}{item?.buyorrent === 1 && ` /night`}</div>
+                                                        <div className="price">{userCurrency ? userCurrency : '$'}{item.price}{item?.buyorrent === '1' && ` /night`}</div>
                                                     </div>
                                                     <div className="location">
                                                         <div className="icon">

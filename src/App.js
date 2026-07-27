@@ -20,27 +20,38 @@ import 'bootstrap/dist/js/bootstrap.bundle.min.js';
 import Header from './component/Header';
 import Main from './component/Main';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ProductDetails } from './component/ProductDetails';
-import { Dashboard } from './component/Dashboard';
-import AddProparty from './component/AddProparty';
-import Receipt from './component/Receipt';
-import { CartProduct } from './component/CartProduct';
-import AllProduct from './component/AllProduct';
 import { AuthProvider } from './context/AuthContext';
 import { useAuth, useContextex } from './context/useContext';
-import PackagePurchase from './component/PackagePurchase';
-import PrivacyPolicy from './component/PrivacyPolicy';
-import TermsAndCondi from './component/TermsAndCondi';
-import ContactUs from './component/ContactUs';
-import { Faqlist } from './component/Faqlist';
 import { PaymentProvider } from './context/PaymentContext';
-import SuccessHandler, { CancelHandler } from './component/PayfastPaymentHandle';
-import { useEffect } from 'react';
+import { useEffect, lazy, Suspense } from 'react';
 // import { PaymentReturn } from './payment/PayfastPayment';
 import { messaging, RecvestToken } from './firebase';
 import { onMessage } from 'firebase/messaging';
-import { PaymentResponse } from './component/PaymentResponse';
 import { ToastContainer } from 'react-toastify';
+
+// Only the homepage (Main) ships in the main bundle - everything else is a
+// separate chunk fetched on demand, so anonymous/organic visitors landing on
+// "/" never download admin, dashboard, checkout, or payment-gateway code.
+const ProductDetails = lazy(() => import('./component/ProductDetails').then(m => ({ default: m.ProductDetails })));
+const Dashboard = lazy(() => import('./component/Dashboard').then(m => ({ default: m.Dashboard })));
+const AddProparty = lazy(() => import('./component/AddProparty'));
+const Receipt = lazy(() => import('./component/Receipt'));
+const CartProduct = lazy(() => import('./component/CartProduct').then(m => ({ default: m.CartProduct })));
+const AllProduct = lazy(() => import('./component/AllProduct'));
+const PackagePurchase = lazy(() => import('./component/PackagePurchase'));
+const PrivacyPolicy = lazy(() => import('./component/PrivacyPolicy'));
+const TermsAndCondi = lazy(() => import('./component/TermsAndCondi'));
+const ContactUs = lazy(() => import('./component/ContactUs'));
+const Faqlist = lazy(() => import('./component/Faqlist').then(m => ({ default: m.Faqlist })));
+const SuccessHandler = lazy(() => import('./component/PayfastPaymentHandle'));
+const CancelHandler = lazy(() => import('./component/PayfastPaymentHandle').then(m => ({ default: m.CancelHandler })));
+const PaymentResponse = lazy(() => import('./component/PaymentResponse').then(m => ({ default: m.PaymentResponse })));
+
+const RouteLoader = () => (
+  <div style={{ zIndex: "777" }} className="preload-container">
+    <div className="middle"></div>
+  </div>
+);
 
 const PrivateRoute = ({ element }) => {
   const { isAuth } = useAuth();
@@ -96,6 +107,7 @@ function App() {
               <div id="wrapper">
                 <div id="page">
                   <Header />
+                  <Suspense fallback={<RouteLoader />}>
                   <Routes>
                     {/* Public Routes */}
                     {isAdmin ? (
@@ -141,6 +153,7 @@ function App() {
                     {/* Page Not Found */}
                     <Route path="*" element={<Navigate to="/" />} />
                   </Routes>
+                  </Suspense>
                   {/* <Footer /> */}
                 </div>
               </div>

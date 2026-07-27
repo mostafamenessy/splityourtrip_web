@@ -7,6 +7,9 @@ import { usePackagePurchase } from '../hooks/usePackagePurchase';
 import { useContextex } from '../context/useContext';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { loadExternalScript } from '../loadExternalScript';
+
+const PAYTM_CHECKOUT_JS_URL = 'https://securegw-stage.paytm.in/merchantpgpui/checkoutjs/merchants/Digita57697814558795.js';
 
 export const PaytmPayment = ({ product_amount, booked_for }) => {
   const [paymentData, setPaymentData] = useState({});
@@ -42,7 +45,9 @@ export const PaytmPayment = ({ product_amount, booked_for }) => {
 
   useEffect(() => {
     if (!paymentData) return;
-    makePayment();
+    loadExternalScript(PAYTM_CHECKOUT_JS_URL)
+      .then(makePayment)
+      .catch((error) => console.error(error.message));
   }, [paymentData]);
 
   const makePayment = () => {

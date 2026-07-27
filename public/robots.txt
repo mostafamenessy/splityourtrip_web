@@ -1,3 +1,15 @@
 # https://www.robotstxt.org/robotstxt.html
 User-agent: *
-Disallow:
+Allow: /
+# Authenticated-only routes: crawling them wastes crawl budget since they
+# just redirect to "/" for anonymous visitors (see PrivateRoute in App.js).
+Disallow: /dashboard
+Disallow: /product-cart
+Disallow: /package_purchase
+Disallow: /payment_success
+Disallow: /package_cancel
+Disallow: /addProparty
+Disallow: /receipt
+Disallow: /PaymentRespons
+
+Sitemap: https://splityourtrip.com/sitemap.xml

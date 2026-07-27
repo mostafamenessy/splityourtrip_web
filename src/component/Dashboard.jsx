@@ -2,7 +2,7 @@
 /* jshint esversion: 11 */
 /* jshint ignore:start */
 
-import { IconArrowBackUp, IconCalendarMonth, IconCopy, IconHeart, IconHeartFilled, IconLocation, IconMap2, IconMessage, IconNotification, IconPackage, IconUser, IconWallet } from '@tabler/icons-react';
+import { IconArrowBackUp, IconCalendarMonth, IconCopy, IconHeart, IconHeartFilled, IconLocation, IconMessage, IconNotification, IconUser, IconWallet } from '@tabler/icons-react';
 import { useEffect, useRef, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useContextex } from '../context/useContext';
@@ -27,9 +27,7 @@ export const Dashboard = () => {
         { name: 'Wallet', icon: IconWallet, nav: 'wallet' },
         { name: 'Profile', icon: IconUser, nav: 'profile' },
         { name: 'My Favorite', icon: IconHeart, nav: 'my_favorite' },
-        { name: 'My Package', icon: IconPackage, nav: 'my_package' },
         { name: 'Notification', icon: IconNotification, nav: 'notifications' },
-        { name: 'Country', icon: IconMap2, nav: 'country' },
         { name: 'Invite Friends', icon: IconLocation, nav: 'invite_friends' },
         { name: 'Chat', icon: IconMessage, nav: 'chats' },
     ];
@@ -39,11 +37,10 @@ export const Dashboard = () => {
     const [dashboardData, setDashboardData] = useState(null);
     const [isCanvasActive, setIsCanvasActive] = useState(false);
     const [activeName, setActiveName] = useState('My Booking');
-    const [loading, setLoading] = useState(true);
 
     const { t } = useTranslation();
 
-    const { isUserId, baseUrl, currentPage, setCurrentPage, selectedCountryId, showCancelModal, setSelectedCountryId, setCountryListData } = useContextex();
+    const { isUserId, baseUrl, currentPage, setCurrentPage, showCancelModal } = useContextex();
 
     useEffect(() => {
         setCurrentPage('dash-board');
@@ -84,14 +81,8 @@ export const Dashboard = () => {
 
                 let endpoint = '';
                 switch (activeName) {
-                    case 'My Package':
-                        endpoint = 'u_sub_details.php';
-                        break;
                     case 'Notification':
                         endpoint = 'notification.php';
-                        break;
-                    case 'Country':
-                        endpoint = 'u_country.php';
                         break;
                     default:
                         break;
@@ -108,7 +99,6 @@ export const Dashboard = () => {
                 });
 
                 setDashboardData(response?.data);
-                setLoading(false);
 
             } catch (err) {
                 console.error(err.message);
@@ -125,24 +115,6 @@ export const Dashboard = () => {
 
     const handleItemClick = (name) => {
         setActiveName(name);
-        if (name === "Country") {
-            setLoading(true);
-        }
-    };
-
-    useEffect(() => {
-        const defaultCity = dashboardData?.CountryData?.find(country => country?.d_con === 1);
-        if (!selectedCountryId) {
-            setSelectedCountryId(defaultCity?.id);
-        }
-    }, [dashboardData]);
-
-    const handleCountryClick = (itemId) => {
-        setSelectedCountryId(itemId);
-        const selectedCountry = dashboardData?.CountryData?.find(country => country?.id === itemId);
-        if (selectedCountry) {
-            setCountryListData([selectedCountry]);
-        }
     };
 
     const handleCanvasClick = () => {
@@ -184,57 +156,12 @@ export const Dashboard = () => {
                                     <FavoriteList />
                                 )}
 
-                                {activeName === 'My Package' && (
-                                    <MyPackage dashboardData={dashboardData} />
-                                )}
-
                                 {activeName === 'Wallet' && (
                                     <WalletList activeName={activeName} />
                                 )}
 
                                 {activeName === 'Notification' && (
                                     <NotificationSec dashboardData={dashboardData} />
-                                )}
-
-                                {activeName === 'Country' && (
-                                    <>
-                                        {loading
-                                            ? <div className="h-[calc(100vh-50px)] w-full flex items-center justify-center">
-                                                <div className="middle2"></div>
-                                            </div>
-                                            : <div className="">
-                                                <div className='d-flex mob-dash flex-col pt-5 pb-5'>
-                                                    <div className='col-10'>
-                                                        <h3>{t('Country')}</h3>
-                                                        <div className="text-content">{t('we glade to see you again!')}</div>
-                                                    </div>
-                                                </div>
-                                                <div className="wg-box pl-44 pr-29 min_box_size" >
-                                                    <section>
-                                                        <div className="cl-container">
-                                                            <div className="col-12">
-                                                                <div className="wrap">
-                                                                    <div style={{ paddingTop: "30px" }} className='flat-cities style-4'>
-                                                                        <div className="row col-12">
-                                                                            {dashboardData?.CountryData?.map(item => (
-                                                                                <div key={item?.id} className={`col-12 pointer col-sm-6 pb-5 col-md-4 col-lg-2 col-xl-2 `} onClick={() => handleCountryClick(item?.id)}>
-                                                                                    <div className={`cities-item style-2 wow fadeInUp ${selectedCountryId === item?.id ? 'active-map' : ''}`} data-wow-delay="0.1s">
-                                                                                        <img src={`${baseUrl}${item?.img}`} className='w-full h-full object-cover' alt="" />
-                                                                                        <div className="content">
-                                                                                            <h4>{item?.title}</h4>
-                                                                                        </div>
-                                                                                    </div>
-                                                                                </div>
-                                                                            ))}
-                                                                        </div>
-                                                                    </div>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </section>
-                                                </div>
-                                            </div>}
-                                    </>
                                 )}
 
                                 {activeName === 'Invite Friends' && (
@@ -1045,96 +972,6 @@ export const NotificationSec = ({ dashboardData }) => {
 
         </>
     )
-}
-
-export const MyPackage = ({ dashboardData }) => {
-
-    const { t } = useTranslation();
-    const [loading, setLoading] = useState(true);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setLoading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    return <>
-
-        {loading
-            ? <div className="h-[calc(100vh-50px)] w-full flex items-center justify-center">
-                <div className="middle2"></div>
-            </div>
-            : <div className="">
-                <div className='d-flex mob-dash flex-col pt-5 pb-5'>
-                    <div className='col-10'>
-                        <h3>{t('My Package')}</h3>
-                        <div className="text-content">{t('We are glad to see you again!')}</div>
-                    </div>
-                </div>
-
-                <div className="wg-box pl-44 pr-29" style={{ height: '100vh', overflowY: 'auto' }}>
-
-                    <div className="table-text-infor default mb-40">
-                        <div className="head">
-                            <div className="item">
-                                <div className="text">{t('Order ID')}</div>
-                            </div>
-                            <div className="item">
-                                <div className="text">{t('Package')}</div>
-                            </div>
-                            <div className="item">
-                                <div className="text">{t('Amount')}</div>
-                            </div>
-                            <div className="item">
-                                <div className="text">{t('Expire Date')}</div>
-                            </div>
-                            <div className="item">
-                                <div className="text">{t('Payment Mode')}</div>
-                            </div>
-                            <div className="item">
-                                <div className="text">{t('Days')}</div>
-                            </div>
-                        </div>
-                        <ul>
-                            {dashboardData?.Subscribedetails?.map((item, index) => (
-                                <li key={index}>
-                                    <div className="text-infor-item item">
-                                        <div>
-                                            <div className="title">{item?.trans_id}</div>
-                                        </div>
-                                        <div>
-                                            <p>{item?.plan_title}</p>
-                                        </div>
-                                        <div>
-                                            <p>${item?.amount}</p>
-                                        </div>
-                                        <div>
-                                            <p>{item?.expire_date}</p>
-                                        </div>
-                                        <div>
-                                            <p>{item?.p_name}</p>
-                                        </div>
-                                        <div>
-                                            <div className="box-status">{item?.day}</div>
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-
-                            {dashboardData?.Subscribedetails?.length === 0 && (
-                                <div style={{ height: "400px" }} className='align-items-center justify-content-center mt-5 d-flex '>
-                                    <div>
-                                        <h4 className='empty-message'>{t('No Any Package Data Available')}</h4>
-                                    </div>
-                                </div>
-                            )}
-
-                        </ul>
-                    </div>
-                </div>
-            </div>}
-    </>
 }
 
 /* jshint ignore:end */

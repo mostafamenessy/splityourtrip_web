@@ -5,6 +5,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import i18n from '../LanguageConfig';
+import Logo from './Logo';
 
 function Footer() {
     const [language, setLanguage] = useState("en");
@@ -40,13 +41,7 @@ function Footer() {
                                 <div className="ft-title">
                                     <div className="logo-footer">
                                         <p>
-                                            <img
-                                                id="logo-footer"
-                                                className='pointer w-50 h-50'
-                                                onClick={handleHome}
-                                                src="../assets/icon/logo-text.png"
-                                                alt=""
-                                            />
+                                            <Logo id="logo-footer" variant="light" onClick={handleHome} />
                                         </p>
                                     </div>
                                 </div>

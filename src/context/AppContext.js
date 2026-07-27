@@ -54,7 +54,6 @@ export const AppProvider = ({ children }) => {
     const [propertyType, setPropertyType] = useState(null);
     const [loginUserData, setLoginUserData] = useState(null);
     const [paymentStatus, setPaymentStatus] = useState(null);
-    const [registerModal, setRegisterModal] = useState(null);
     const [authLoginToken, setAuthLoginToken] = useState(null);
     const [userPropertyList, setUserPropertyList] = useState();
     const [countryListData, setCountryListData] = useState(null);
@@ -78,7 +77,7 @@ export const AppProvider = ({ children }) => {
     const [bookedProductData, setBookedProductData] = useState([]);
 
     const [selectedId, setSelectedId] = useState("0");
-    const [userCurrency, setUserCurrency] = useState('$');
+    const [userCurrency, setUserCurrency] = useState(localStorage.getItem('siteCurrency') || '$');
     const [selectedPackage, setSelectedPackage] = useState('1');
     const [selectedTab, setSelectedTab] = useState('Dashboard');
     const [paymentFor, setPaymentFor] = useState('');
@@ -172,6 +171,35 @@ export const AppProvider = ({ children }) => {
         setIsAdmin(loginUserData?.type === 'admin');
     }, [loginUserData]);
 
+    // The site's configured currency (from tbl_setting) previously only got
+    // fetched by Main.jsx (the "/" route), so any other route reached directly
+    // - e.g. /product-all from a bookmark, shared link, or search result -
+    // showed the '$' fallback. Fetch it once here at the app level so every
+    // route gets the correct currency, regardless of which page loads first.
+    useEffect(() => {
+        const fetchCurrencyAsync = async () => {
+            try {
+                const response = await axios.post(`${baseUrl}user_api/u_home_data.php?`, {
+                    uid: isUserId || '0',
+                    country_id: 0,
+                }, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                const currency = response?.data?.HomeData?.currency;
+                if (currency) {
+                    setUserCurrency(currency);
+                    localStorage.setItem('siteCurrency', currency);
+                }
+            } catch (err) {
+                console.error(err.message);
+            }
+        };
+
+        fetchCurrencyAsync();
+    }, []);
+
     useEffect(() => {
         const fetchDataAndSetUserPageList = async () => {
             try {
@@ -256,7 +284,6 @@ export const AppProvider = ({ children }) => {
         selectedPackData,
         selectedPaymentType,
         loginData,
-        registerModal,
         registrData,
         isAdmin,
         userWalletAmount,
@@ -287,7 +314,6 @@ export const AppProvider = ({ children }) => {
         setUserWalletAmount,
         setIsAdmin,
         setRegistrData,
-        setRegisterModal,
         setLoginData,
         setSelectedPaymentType,
         setSelectedPackData,
