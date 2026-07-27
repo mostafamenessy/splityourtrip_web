@@ -439,6 +439,10 @@ export const TabsCard = () => {
     const navigate = useNavigate();
 
     useEffect(() => {
+        // Same race as the featured-listings fetch above: the backend
+        // errors out (ResponseCode 401) when country_id is empty, so skip
+        // until selectedCountryId has resolved to a real value.
+        if (!selectedCountryId) return;
         fetchCountryDataAsync(selectedId, selectedCountryId);
     }, [selectedId, selectedCountryId]);
 
