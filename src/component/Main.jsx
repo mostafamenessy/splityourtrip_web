@@ -84,6 +84,11 @@ function Main() {
     }, [setCurrentPage]);
 
     useEffect(() => {
+        // Skip the initial mount when selectedCountryId hasn't resolved yet -
+        // the backend returns 0 listings for country_id 0, causing a visible
+        // "no listings" flash before the default-country effect below sets a
+        // real id and this re-fires.
+        if (!selectedCountryId) return;
         fetchCountryDataAsync(selectedCountryId);
     }, [isUserId, selectedCountryId]);
 
