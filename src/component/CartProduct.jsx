@@ -19,6 +19,7 @@ import { MidtransPayment } from '../component/MidtransPayment';
 import { TwoCheckoutPayment } from '../component/TwoCheckoutPayment';
 import PayfastPayment from '../component/PayfastPayment';
 import { MercadoPagoPayment } from '../component/MercadoPagoPayment';
+import { PaymobPayment } from '../component/PaymobPayment';
 import { AddToProductPay } from '../component/AddToWallet';
 import Footer from '../component/Footer';
 import { useTranslation } from 'react-i18next';
@@ -85,6 +86,19 @@ export const CartProduct = () => {
             setShowPaymentList(false);
         }
     }, [selectedPaymentType, paymentTrigger]);
+
+    useEffect(() => {
+        // Default to Paymob once the gateway list loads, so users aren't
+        // forced to pick a method manually. Only applies if nothing has
+        // been selected yet and the gateway is actually enabled/live.
+        if (selectedPaymentId || !paymentGatwayList) return;
+        const paymob = paymentGatwayList.find(item => item?.title === 'Paymob');
+        if (paymob) {
+            setSelectedPaymentType(paymob.title);
+            setSelectedPaymentId(paymob.id);
+            setAttributes(paymob.attributes);
+        }
+    }, [paymentGatwayList, selectedPaymentId]);
 
     useEffect(() => {
         const fetchCountryDataAsync = async () => {
@@ -541,6 +555,7 @@ export const CartProduct = () => {
             {selectedPaymentType === '2checkout' && paymentTrigger && <TwoCheckoutPayment product_amount={finalPrice} attributes={attributes} />}
             {selectedPaymentType === 'Payfast' && paymentTrigger && <PayfastPayment product_name={producttitle} product_amount={finalPrice} booked_for={'booking'} attributes={attributes} />}
             {selectedPaymentType === 'MercadoPago' && paymentTrigger && <MercadoPagoPayment product_name={producttitle} product_amount={finalPrice} attributes={attributes} />}
+            {selectedPaymentType === 'Paymob' && paymentTrigger && <PaymobPayment product_amount={finalPrice} booked_for={'booking'} />}
 
             <Footer />
 
