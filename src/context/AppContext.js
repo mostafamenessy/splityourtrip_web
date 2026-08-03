@@ -62,11 +62,8 @@ export const AppProvider = ({ children }) => {
     const [bookedProductRes, setBookedProductRes] = useState(null);
     const [selectedPackData, setSelectedPackData] = useState(null);
     const [userWalletAmount, setUserWalletAmount] = useState(null);
-    const [editSelectedImage, setEditSelectedImage] = useState(null);
     const [paymentGatwayList, setPaymentGatwayList] = useState(null);
     const [editSelectedProperty, setEditSelectedProperty] = useState(null);
-    const [editSelectedMyGallaryImage, setEditSelectedMyGallaryImage] = useState(null);
-    const [editSelectedMyGallaryCategory, setEditSelectedMyGallaryCategory] = useState(null);
 
     const [tabsList, setTabsList] = useState([]);
     const [countryData, setCountryData] = useState([]);
@@ -252,9 +249,6 @@ export const AppProvider = ({ children }) => {
         isEditSelectedProperty,
         dashboardTabData,
         userPropertyList,
-        editSelectedImage,
-        editSelectedMyGallaryImage,
-        editSelectedMyGallaryCategory,
         complateCurrentBook,
         confirmCurrentBook,
         userCurrency,
@@ -342,9 +336,6 @@ export const AppProvider = ({ children }) => {
         setUserCurrency,
         setComplateCurrentBook,
         setConfirmCurrentBook,
-        setEditSelectedMyGallaryCategory,
-        setEditSelectedMyGallaryImage,
-        setEditSelectedImage,
         setUserPropertyList,
         setDashboardTabData,
         setIsEditSelectedProperty,

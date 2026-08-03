@@ -7,7 +7,7 @@ import { useAuth, useContextex } from '../context/useContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
 import { collection, doc, onSnapshot, setDoc } from 'firebase/firestore';
-import { signInWithPopup, GoogleAuthProvider, FacebookAuthProvider } from 'firebase/auth';
+import { signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
 import { db, auth, RecvestToken } from '../firebase';
 import { uid } from 'uid';
 import { showToast } from '../showTost';
@@ -58,14 +58,8 @@ const GoogleIcon = () => (
     </svg>
 );
 
-const FacebookIcon = () => (
-    <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
-        <path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" fill="#1877F2" />
-    </svg>
-);
-
 function LoginPage() {
-    // 'landing' -> pick Google / Facebook / email
+    // 'landing' -> pick Google / email
     // 'otp'     -> enter the 6-digit code just emailed
     // 'name'    -> first-time email sign up, ask for a name
     const [mode, setMode] = useState('landing');
@@ -109,16 +103,15 @@ function LoginPage() {
         firebaseAddUser();
     };
 
-    const handleSocialLogin = async (providerName) => {
+    const handleSocialLogin = async () => {
         try {
             setLoading(true);
-            const provider = providerName === 'google' ? new GoogleAuthProvider() : new FacebookAuthProvider();
-            const result = await signInWithPopup(auth, provider);
+            const result = await signInWithPopup(auth, new GoogleAuthProvider());
             const idToken = await result.user.getIdToken();
 
             const response = await axios.post(
                 `${baseUrl}user_api/u_social_login.php?`,
-                { idToken, provider: providerName },
+                { idToken, provider: 'google' },
                 { headers: { 'Content-Type': 'application/json' } }
             );
 
@@ -129,7 +122,7 @@ function LoginPage() {
                 showToast({ title: data?.ResponseMsg || 'Login failed', id: 'error' });
             }
         } catch (err) {
-            console.error(`${providerName} login error:`, err.message);
+            console.error('google login error:', err.message);
             if (err.code !== 'auth/popup-closed-by-user' && err.code !== 'auth/cancelled-popup-request') {
                 showToast({ title: 'Login failed, please try again', id: 'error' });
             }
@@ -274,19 +267,10 @@ function LoginPage() {
                     <button
                         type="button"
                         disabled={loading}
-                        onClick={() => handleSocialLogin('google')}
-                        className="w-[100%] flex items-center justify-center gap-[10px] border border-[#80808038] py-[12px] rounded-[10px] mb-[10px] text-[15px] font-[500]"
-                    >
-                        <GoogleIcon /> {t('Continue with Google')}
-                    </button>
-
-                    <button
-                        type="button"
-                        disabled={loading}
-                        onClick={() => handleSocialLogin('facebook')}
+                        onClick={handleSocialLogin}
                         className="w-[100%] flex items-center justify-center gap-[10px] border border-[#80808038] py-[12px] rounded-[10px] mb-[15px] text-[15px] font-[500]"
                     >
-                        <FacebookIcon /> {t('Continue with Facebook')}
+                        <GoogleIcon /> {t('Continue with Google')}
                     </button>
 
                     <div className="flex items-center gap-[10px] mb-[15px]">

@@ -2,7 +2,7 @@
 /* jshint ignore:start */
 
 import React, { useEffect, useState } from 'react';
-import { IconLocation } from '@tabler/icons-react';
+import { IconLocation, IconX } from '@tabler/icons-react';
 import { useContextex } from '../context/useContext';
 import { useTranslation } from 'react-i18next';
 import axios from 'axios';
@@ -81,6 +81,54 @@ const FileUpload = ({ selectedFile, onFileChange, defImg, baseUrl, error }) => (
     </div>
 );
 
+const GalleryUpload = ({ existingImages, newFiles, baseUrl, onAddFiles, onRemoveNewFile, onDeleteExisting }) => (
+    <div className="w-100">
+        <div className="grid-checkbox" style={{ display: 'flex', flexWrap: 'wrap', gap: '10px', marginBottom: '10px' }}>
+            {existingImages?.map((item) => (
+                <div key={item.id} style={{ position: 'relative', width: '90px', height: '90px' }}>
+                    <img
+                        src={`${baseUrl}${item.image}`}
+                        alt="Property"
+                        style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => onDeleteExisting(item)}
+                        style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#dc3545', borderRadius: '50%', width: '22px', height: '22px', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <IconX size={14} />
+                    </button>
+                </div>
+            ))}
+
+            {newFiles?.map((file, index) => (
+                <div key={index} style={{ position: 'relative', width: '90px', height: '90px' }}>
+                    <img
+                        src={`data:image/jpeg;base64,${file}`}
+                        alt="New upload"
+                        style={{ width: '90px', height: '90px', objectFit: 'cover', borderRadius: '8px' }}
+                    />
+                    <button
+                        type="button"
+                        onClick={() => onRemoveNewFile(index)}
+                        style={{ position: 'absolute', top: '-6px', right: '-6px', background: '#dc3545', borderRadius: '50%', width: '22px', height: '22px', color: '#fff', border: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
+                        <IconX size={14} />
+                    </button>
+                </div>
+            ))}
+
+            <label
+                className="uploadfile"
+                style={{ width: '90px', height: '90px', border: '1px dashed #80808080', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}
+            >
+                <span style={{ fontSize: '28px', color: '#808080' }}>+</span>
+                <input type="file" accept="image/*" multiple onChange={onAddFiles} style={{ display: 'none' }} />
+            </label>
+        </div>
+    </div>
+);
+
 const AddPropartyForm = () => {
     const { t } = useTranslation();
     const {
@@ -94,7 +142,6 @@ const AddPropartyForm = () => {
         setCountryListData
     } = useContextex();
 
-    const [selectedProperty, setSelectedProperty] = useState('');
     const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedPropertyType, setSelectedPropertyType] = useState('');
     const [selectedPropertyStatus, setSelectedPropertyStatus] = useState('');
@@ -122,6 +169,10 @@ const AddPropartyForm = () => {
     const [checkedFacilities, setCheckedFacilities] = useState([]);
     const [, setMappedFacilities] = useState([]);
     const [defImg, setDefImg] = useState(null)
+    const [galleryFiles, setGalleryFiles] = useState([]);
+    const [existingGalleryImages, setExistingGalleryImages] = useState([]);
+    const [importUrl, setImportUrl] = useState('');
+    const [importing, setImporting] = useState(false);
     const [errors, setErrors] = useState({
         prop_title: '',
         prop_address: '',
@@ -135,7 +186,6 @@ const AddPropartyForm = () => {
         prop_capacity: '',
         prop_city: '',
         selectedPropertyType: '',
-        selectedProperty: '',
         selectedCountry: '',
         selectedPropertyStatus: '',
         selectedFile: '',
@@ -145,8 +195,7 @@ const AddPropartyForm = () => {
 
     useEffect(() => {
         if (isEditSelectedProperty && editSelectedProperty) {
-            const { longtitude, latitude, city, plimit, rate, sqrft, bathroom, beds, description, price, mobile, address, title, image, status, property_type_id, country_id, buyorrent } = editSelectedProperty
-            setSelectedProperty(buyorrent);
+            const { longtitude, latitude, city, plimit, rate, sqrft, bathroom, beds, description, price, mobile, address, title, image, status, property_type_id, country_id } = editSelectedProperty
             setSelectedCountry(country_id);
             setSelectedPropertyType(property_type_id);
             setSelectedPropertyStatus(status);
@@ -211,6 +260,28 @@ const AddPropartyForm = () => {
     }, [isEditSelectedProperty, editSelectedProperty, propertyFacilityData]);
 
     useEffect(() => {
+        const fetchExistingGallery = async () => {
+            if (!isEditSelectedProperty || !editSelectedProperty?.id) {
+                setExistingGalleryImages([]);
+                return;
+            }
+            try {
+                const response = await axios.post(`${baseUrl}user_api/gallery_list.php?`, {
+                    uid: isUserId,
+                }, {
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                const allImages = response?.data?.gallerylist || [];
+                setExistingGalleryImages(allImages.filter(item => String(item.property_id) === String(editSelectedProperty.id)));
+            } catch (err) {
+                console.error(err.message);
+            }
+        };
+
+        fetchExistingGallery();
+    }, [isEditSelectedProperty, editSelectedProperty, isUserId, baseUrl]);
+
+    useEffect(() => {
         const fetchCountryDataAsync = async () => {
             try {
                 const response = await axios.post(`${baseUrl}user_api/u_country.php?`, {
@@ -231,7 +302,6 @@ const AddPropartyForm = () => {
     }, [isUserId]);
 
     const resetForm = () => {
-        setSelectedProperty('');
         setSelectedCountry('');
         setSelectedPropertyType('');
         setSelectedPropertyStatus('');
@@ -256,10 +326,11 @@ const AddPropartyForm = () => {
         setDefImg(null)
         setMappedFacilities([]);
         setCheckedFacilities([])
+        setGalleryFiles([]);
     };
 
     const validatePropInputs = () => {
-        const newErrors = { selectedPropertyType: '', selectedPropertyStatus: '', selectedProperty: '', selectedCountry: '', selectedFile: '', checkedFacilities: '' };
+        const newErrors = { selectedPropertyType: '', selectedPropertyStatus: '', selectedCountry: '', selectedFile: '', checkedFacilities: '' };
         const requiredFields = [
             { field: 'prop_title', message: 'Please enter a property title' },
             { field: 'prop_address', message: 'Please enter a property Address' },
@@ -291,10 +362,6 @@ const AddPropartyForm = () => {
             newErrors.selectedPropertyStatus = "Please select a valid property status"
             isValid = false
         }
-        if (!selectedProperty) {
-            newErrors.selectedProperty = "Please select a valid property for"
-            isValid = false
-        }
         if (!selectedCountry) {
             newErrors.selectedCountry = "Please select a valid country"
             isValid = false
@@ -316,6 +383,131 @@ const AddPropartyForm = () => {
         return isValid;
     };
 
+    const resolveGalleryCategoryId = async (propId) => {
+        try {
+            const catRes = await axios.post(`${baseUrl}user_api/property_wise_galcat.php?`, {
+                uid: isUserId,
+                prop_id: propId,
+            }, { headers: { 'Content-Type': 'application/json' } });
+
+            const existingCat = catRes?.data?.galcatlist?.[0];
+            if (existingCat?.id) return existingCat.id;
+
+            const createRes = await axios.post(`${baseUrl}user_api/u_gal_cat_add.php?`, {
+                uid: isUserId,
+                prop_id: propId,
+                title: 'Photos',
+                status: '1',
+            }, { headers: { 'Content-Type': 'application/json' } });
+
+            return createRes?.data?.cat_id;
+        } catch (err) {
+            console.error(err.message);
+            return null;
+        }
+    };
+
+    const uploadGalleryFiles = async (propId) => {
+        if (!galleryFiles.length) return;
+
+        const catId = await resolveGalleryCategoryId(propId);
+        if (!catId) return;
+
+        for (const file of galleryFiles) {
+            try {
+                await axios.post(`${baseUrl}user_api/add_gallery.php?`, {
+                    uid: isUserId,
+                    prop_id: propId,
+                    cat_id: catId,
+                    status: '1',
+                    img: file,
+                }, { headers: { 'Content-Type': 'application/json' } });
+            } catch (err) {
+                console.error(err.message);
+            }
+        }
+    };
+
+    const handleImportListing = async () => {
+        if (!importUrl.trim()) {
+            showToast({ title: 'Please paste an Airbnb or Booking.com listing URL', id: 'error' });
+            return;
+        }
+
+        setImporting(true);
+        try {
+            const response = await axios.post(`${baseUrl}user_api/u_import_listing.php?`, {
+                url: importUrl.trim(),
+            }, { headers: { 'Content-Type': 'application/json' } });
+
+            const data = response?.data;
+            if (data?.ResponseCode === '200') {
+                setPropertyDetails(prev => ({
+                    ...prev,
+                    prop_title: data.title || prev.prop_title,
+                    prop_description: data.description || prev.prop_description,
+                    prop_address: data.address || prev.prop_address,
+                    prop_city: data.city || prev.prop_city,
+                    prop_rating: data.rating != null ? String(data.rating) : prev.prop_rating,
+                }));
+
+                // Default new imports to Egypt - the vast majority of
+                // listings on this platform are Egyptian, and neither
+                // Airbnb nor Booking.com's scrapable data reliably maps to
+                // our internal country_id list.
+                setSelectedCountry('1');
+
+                const images = data.images || [];
+                if (images.length > 0) {
+                    setSelectedFile(images[0]);
+                    setGalleryFiles(images.slice(1));
+                }
+
+                showToast({ title: t('Imported - please review and complete price, beds/baths and facilities below'), id: 'success' });
+            } else {
+                showToast({ title: data?.ResponseMsg || 'Could not import that listing', id: 'error' });
+            }
+        } catch (err) {
+            console.error(err.message);
+            showToast({ title: 'Import failed, please try again or enter details manually', id: 'error' });
+        } finally {
+            setImporting(false);
+        }
+    };
+
+    const handleAddGalleryFiles = (event) => {
+        const files = Array.from(event.target.files || []);
+        files.forEach((file) => {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                setGalleryFiles(prev => [...prev, reader.result.split(',')[1]]);
+            };
+            reader.readAsDataURL(file);
+        });
+        event.target.value = '';
+    };
+
+    const handleRemoveNewGalleryFile = (index) => {
+        setGalleryFiles(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleDeleteExistingGalleryImage = async (item) => {
+        try {
+            await axios.post(`${baseUrl}user_api/update_gallery.php?`, {
+                uid: isUserId,
+                prop_id: item.property_id,
+                cat_id: item.category_id,
+                record_id: item.id,
+                status: '0',
+                img: '0',
+            }, { headers: { 'Content-Type': 'application/json' } });
+
+            setExistingGalleryImages(prev => prev.filter(img => img.id !== item.id));
+        } catch (err) {
+            console.error(err.message);
+        }
+    };
+
     const handleAddProperty = async (event) => {
         event.preventDefault();
         const endpoint = isEditSelectedProperty ? 'u_property_edit.php' : 'u_property_add.php';
@@ -326,7 +518,7 @@ const AddPropartyForm = () => {
             status: selectedPropertyStatus,
             plimit: propertyDetails.prop_capacity,
             country_id: selectedCountry,
-            pbuysell: selectedProperty,
+            pbuysell: '1',
             title: propertyDetails.prop_title,
             address: propertyDetails.prop_address,
             description: propertyDetails.prop_description,
@@ -352,11 +544,15 @@ const AddPropartyForm = () => {
                 },
             });
 
-            resetForm()
-
             if (response?.data?.ResponseCode === '200') {
-                const toastId = response?.data?.ResponseCode === '200' ? "success" : "error";
-                showToast({ title: response?.data?.ResponseMsg, id: toastId });
+                const propId = isEditSelectedProperty ? editSelectedProperty?.id : response?.data?.prop_id;
+                if (propId) {
+                    await uploadGalleryFiles(propId);
+                }
+                showToast({ title: response?.data?.ResponseMsg, id: "success" });
+                resetForm();
+            } else {
+                showToast({ title: response?.data?.ResponseMsg, id: "error" });
             }
 
         } catch (err) {
@@ -408,49 +604,38 @@ const AddPropartyForm = () => {
         });
     };
 
-    const handleItemSell = async () => {
-        try {
-            const formData = new FormData();
-            formData.append('avatar', selectedFile);
-
-            const response = await axios.post(`${baseUrl}user_api/u_sale_prop.php`, {
-                uid: isUserId,
-                prop_id: editSelectedProperty?.id
-            });
-            const toastId = response?.data?.ResponseCode === '200' ? "success" : "error";
-            showToast({ title: response?.data?.ResponseMsg, id: toastId });
-
-        } catch (error) {
-            console.error('Error uploading image:', error);
-        }
-    };
-
     return (
         <>
 
+            {!isEditSelectedProperty && (
+                <div className="wg-box pl-44 pr-29 mb-20">
+                    <h4 style={{ marginBottom: '10px' }}>{t('Import from Airbnb or Booking.com')}</h4>
+                    <p className='text-content' style={{ marginBottom: '10px' }}>
+                        {t('Paste a listing URL to pull in its title, description and photos automatically. This is best-effort - please review everything and fill in price, location, beds/baths and facilities yourself.')}
+                    </p>
+                    <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: '10px' }}>
+                        <input
+                            type="text"
+                            style={{ border: '1px solid black', width: '100%', minWidth: 0, boxSizing: 'border-box' }}
+                            placeholder={t('https://www.airbnb.com/rooms/... or https://www.booking.com/hotel/...')}
+                            value={importUrl}
+                            onChange={(e) => setImportUrl(e.target.value)}
+                        />
+                        <button
+                            type="button"
+                            className="tf-button-primary"
+                            disabled={importing}
+                            onClick={handleImportListing}
+                        >
+                            {importing ? t('Importing...') : t('Import')}
+                        </button>
+                    </div>
+                </div>
+            )}
+
             <div className="wg-box pl-44 mb-20">
                 <form className="form-basic-information flex gap-3 flex-column">
-                    {editSelectedProperty?.buyorrent === 2 && editSelectedProperty?.is_sell === 0 && isEditSelectedProperty &&
-                        <div>
-                            <p className="cursor-pointer tf-button-primary style-black active bg-danger" onClick={handleItemSell} style={{ float: 'right' }}> {t('SOLD OUT')}</p>
-                        </div>
-                    }
-
                     <div className='cols'>
-                        <div className='w-100'>
-                            <SelectField
-                                label="Property Type"
-                                options={[
-                                    { value: '2', label: 'Buy' },
-                                    { value: '1', label: 'Rent' }
-                                ]}
-                                selectedValue={selectedProperty}
-                                onSelect={handleSelect(setSelectedProperty)}
-                                error={errors.selectedProperty}
-                            />
-                            <span className='span-text text-danger mx-4'>{errors?.selectedProperty}</span>
-                        </div>
-
                         <div className='w-100'>
                             <SelectField
                                 label="Country"
@@ -590,6 +775,19 @@ const AddPropartyForm = () => {
             </div>
 
             <div className="wg-box pl-44 mb-20">
+                <h4 style={{ marginBottom: "10px" }}>{t('Photos')}</h4>
+                <p className='text-content' style={{ marginBottom: '10px' }}>{t('Add more photos of this property for the gallery shown on your listing page.')}</p>
+                <GalleryUpload
+                    existingImages={existingGalleryImages}
+                    newFiles={galleryFiles}
+                    baseUrl={baseUrl}
+                    onAddFiles={handleAddGalleryFiles}
+                    onRemoveNewFile={handleRemoveNewGalleryFile}
+                    onDeleteExisting={handleDeleteExistingGalleryImage}
+                />
+            </div>
+
+            <div className="wg-box pl-44 mb-20">
                 <h4 style={{ marginBottom: "10px" }}>{t('Status')}</h4>
                 <form className="form-price flex gap-3 flex-column">
                     <div className="cols">
@@ -642,13 +840,11 @@ const AddPropartyForm = () => {
                         </div>
                     </div>
 
-                    {editSelectedProperty?.is_sell === 1 ? null : (
-                        <div className="button-submit mt-10">
-                            <button className="tf-button-primary" onClick={handleAddProperty}>
-                                {t('Add Property')} <i className="icon-arrow-right-add"></i>
-                            </button>
-                        </div>
-                    )}
+                    <div className="button-submit mt-10">
+                        <button className="tf-button-primary" onClick={handleAddProperty}>
+                            {t('Add Property')} <i className="icon-arrow-right-add"></i>
+                        </button>
+                    </div>
                 </form>
             </div>
 

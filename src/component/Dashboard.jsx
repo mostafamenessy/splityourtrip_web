@@ -196,7 +196,7 @@ const FavoriteList = () => {
     const [isRemove, setIsRemove] = useState(false);
     const [loading, setLoading] = useState(true);
 
-    const { isUserId, baseUrl, selectedId, selectedCountryId, setProductDetailId } = useContextex();
+    const { isUserId, baseUrl, selectedId, selectedCountryId, setProductDetailId, userCurrency } = useContextex();
     const navigate = useNavigate();
     const { t } = useTranslation();
 
@@ -273,7 +273,7 @@ const FavoriteList = () => {
                             <img className="h-100 w-100 object-cover" src={`${baseUrl}${item.image}`} alt={item.title} />
                         </div>
                         <div className="pointer" onClick={() => handleItemClick(item)}>
-                            <div className="price">${item.price}</div>
+                            <div className="price">{userCurrency}{item.price}</div>
                             <div className="title p-0 m-0">
                                 <p>{item.title.substring(0, 15)}</p>
                             </div>
@@ -290,7 +290,7 @@ const FavoriteList = () => {
                     <div className="box-status">{item.rate}</div>
                 </div>
                 <div>
-                    <p>{item.buyorrent === 2 ? 'Buy' : 'Rent'}</p>
+                    <p>Rent</p>
                 </div>
                 <div className="icon pointer" onClick={() => handleFavoriteToggle(item)}>
                     {item.IS_FAVOURITE === 1 ? <IconHeartFilled style={iconStyle} /> : <IconHeart style={iconStyle} />}
@@ -562,7 +562,7 @@ export const UserBookingSec = ({ activeName }) => {
 
     const DatalodRef = useRef(false);
     const { t } = useTranslation();
-    const { isUserId, baseUrl, setBookingId, setShowCancelModal } = useContextex();
+    const { isUserId, baseUrl, setBookingId, setShowCancelModal, userCurrency } = useContextex();
 
     useEffect(() => {
         fetchCountryDataAsync();
@@ -666,7 +666,7 @@ export const UserBookingSec = ({ activeName }) => {
                             <img src={`${baseUrl}${item.prop_img}`} alt={item.prop_title} />
                         </div>
                         <div>
-                            <div className="price">${item.prop_price}</div>
+                            <div className="price">{userCurrency}{item.prop_price}</div>
                             <div className="title">
                                 <p>{item.prop_title}</p>
                             </div>

@@ -4,11 +4,8 @@
 import React, { useEffect, useState } from 'react';
 import { useContextex } from '../context/useContext';
 import { Link } from 'react-router-dom';
-import { IconArrowBackUp, IconEye, IconPhotoPlus } from '@tabler/icons-react';
+import { IconArrowBackUp, IconEye, IconHome2, IconCalendarCheck, IconStar, IconWallet, IconRefreshDot } from '@tabler/icons-react';
 import AddPropartyForm from './AddPropartyForm';
-import AddImages from './AddImages';
-import AddGalaryImage from './AddGalaryImage';
-import AddGalleryCategory from './AddGalleryCategory';
 import { ReModal } from '../component/ReModal';
 import Receipt from './Receipt';
 import $ from 'jquery';
@@ -45,8 +42,16 @@ const TopLeftBar = ({ topText, bottomText }) => {
     )
 }
 
+const dashCardIcons = {
+    'My Property': IconHome2,
+    'My Booking': IconCalendarCheck,
+    'Total Review': IconStar,
+    'My Payout': IconWallet,
+    'Calendar Sync': IconRefreshDot,
+};
+
 const Dashboard = ({ userDashboardDetails, dashCard }) => {
-    const { baseUrl, userCurrency, setSelectedTab, loginUserData } = useContextex();
+    const { userCurrency, setSelectedTab, loginUserData } = useContextex();
     const { t } = useTranslation();
 
     const [loading, setloading] = useState(true);
@@ -71,20 +76,22 @@ const Dashboard = ({ userDashboardDetails, dashCard }) => {
                         </div>
                     </div>
                     <div className="grid-section-4 mb-20 ">
-                        {dashCard?.map((item, index) => (
-
-                            <div className="wg-box pointer" key={index} onClick={() => setSelectedTab(item?.title)}>
-                                <div className="box-icon style-1 type-row">
-                                    <div className="content">
-                                        <p className="title"><span className='text-success'>{item?.title === 'My Earning' || item?.title === 'My Payout' ? userCurrency : null}</span>{item?.report_data}</p>
-                                        <div className="text-content">{item?.title}</div>
-                                    </div>
-                                    <div className="icon">
-                                        <img src={`${baseUrl}${item?.url}`} alt={item?.title} />
+                        {dashCard?.map((item, index) => {
+                            const CardIcon = dashCardIcons[item?.title] || IconHome2;
+                            return (
+                                <div className="wg-box pointer" key={index} onClick={() => setSelectedTab(item?.title)}>
+                                    <div className="box-icon style-1 type-row">
+                                        <div className="content">
+                                            <p className="title"><span className='text-success'>{item?.title === 'My Earning' || item?.title === 'My Payout' ? userCurrency : null}</span>{item?.report_data}</p>
+                                            <div className="text-content">{item?.title}</div>
+                                        </div>
+                                        <div className="icon">
+                                            <CardIcon size={32} stroke={1.5} />
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                        ))}
+                            );
+                        })}
 
                     </div>
                 </div>}
@@ -155,11 +162,7 @@ const MYProperty = ({ setEditAddPropertyData, setShowAddPropertyData, handleBack
                                                             <img className="image" src={`${baseUrl}${item.image}`} alt={item?.title} />
 
                                                             <div className="overlay list-tags">
-                                                                {item?.is_sell === 1 ? (
-                                                                    <p className="tags-item for-sell bg-white text-success">{t('SOLD')}</p>
-                                                                ) : (
-                                                                    <p className="tags-item for-sell bg-white text-primary " >{item?.buyorrent === 2 ? 'BUY' : 'SALE'}</p>
-                                                                )}
+                                                                <p className="tags-item for-sell bg-white text-primary ">{t('RENT')}</p>
                                                             </div>
                                                         </div>
 
@@ -215,326 +218,6 @@ const MYProperty = ({ setEditAddPropertyData, setShowAddPropertyData, handleBack
                             </div>
                         </div>
 
-                    )}
-                </div>}
-        </>
-    )
-}
-
-const MYExtraImage = ({ setShowEditExtaImage, setShowAddExtaImage, handleBackButton, showEditExtaImage, showAddExtaImage }) => {
-    const { baseUrl, setIsEditSelectedProperty, setEditSelectedImage, setEditSelectedMyGallaryImage, dashboardTabData, selectedTab, isAdmin } = useContextex();
-    const { t } = useTranslation();
-    const myTabHeader = [t('Listing Title'), t('Action')];
-
-    const [loading, setloading] = useState(true);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setloading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    return (
-        <>
-            {loading
-                ? <div className="h-[calc(100vh-50px)] w-full flex items-center justify-center">
-                    <div className="middle2"></div>
-                </div>
-                : <div>
-                    <div className='d-flex mob-dash col-12 flex-col pt-5 pb-5'>
-
-                        <TopLeftBar
-                            topText={t('My Extra Image')}
-                            bottomText={t('We are glad to see you again!')}
-                        />
-
-                        {showAddExtaImage || showEditExtaImage ? (
-
-                            <div className='position-absolute' style={{ right: '20px' }} onClick={handleBackButton}>
-                                <Link to={isAdmin ? `/${selectedTab}/add` : `/addProparty/${selectedTab}/add`} onClick={() => { setIsEditSelectedProperty(false); setShowAddExtaImage(false) }}>
-                                    <button className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px] flex items-center gap-[10px]'>{t('Back')} <IconArrowBackUp /></button>
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className='position-absolute' style={{ right: '20px' }} onClick={() => { setEditSelectedMyGallaryImage(false); setShowAddExtaImage(true); setIsEditSelectedProperty(false) }}>
-                                <button className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px]'>{t('Add Extra Image')}</button>
-                            </div>
-                        )}
-
-                    </div>
-
-
-                    {showAddExtaImage || showEditExtaImage ? (
-                        <div className='wg-box pl-44 pr-29'>
-                            <div className='d-flex justify-content-between'>
-                                <h4>{t('Basic Information')}</h4>
-                            </div>
-                            <AddImages />
-                        </div>
-                    ) : (
-
-                        <div className="wg-box pl-44 ">
-                            {showAddExtaImage ? (<AddImages />) : showEditExtaImage ? (<AddImages />) : (
-                                <div className="table-listing-properties mb-40">
-                                    <TabHeader tabList={myTabHeader} />
-
-                                    <ul>
-                                        {dashboardTabData?.extralist?.map((item, index) => (
-                                            <>
-                                                <div key={index} className="my-properties-item item">
-                                                    <div className="d-flex m-3">
-                                                        <div className="d-flex items-center gap-4 w-100">
-                                                            <img className='w-[75px] h-[75px] object-cover rounded-[5px]' src={`${baseUrl}${item?.image}`} alt={`${item?.property_title} ${item?.id}`} />
-                                                            <p className="m-2">{item?.property_title}</p>
-                                                        </div>
-                                                    </div>
-                                                    <hr></hr>
-                                                    <div>
-                                                        <ul className="wg-icon" onClick={() => {
-                                                            setEditSelectedImage(item);
-                                                            setShowEditExtaImage(true);
-                                                            setIsEditSelectedProperty(true)
-                                                        }}>
-                                                            <li className="edit-btns">
-                                                                <i className="flaticon-edit"></i>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ))}
-
-                                        {dashboardTabData?.extralist?.length === 0 && (
-                                            <div style={{ height: "420px" }} className='align-items-center flex-column justify-content-center mt-5 d-flex '>
-                                                <h6 className='empty-message'>{t('Sorry, there is no any nearby')}</h6>
-                                                <h6 className='empty-message'>{t('category or data not found')}</h6>
-                                            </div>
-                                        )}
-
-                                    </ul>
-
-                                    {/* <div className='flex align-items-center justify-content-center h-100' >
-                                    {loading && (
-                                        <div className="preload preload-container" >
-                                            <div className="middle"></div>
-                                        </div>
-                                    )}
-                                </div> */}
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>
-            }
-        </>
-    )
-}
-
-const MYGAlImage = ({ setShowEditGalaryImages, handleBackButton, setShowAddGalaryImages, showEditGalaryImages, showAddGalaryImages }) => {
-
-    const { baseUrl, setIsEditSelectedProperty, setEditSelectedMyGallaryImage, dashboardTabData, selectedTab, isAdmin } = useContextex();
-    const { t } = useTranslation();
-    const myTabHeader = [t('Listing Title'), t('Action')];
-
-    const [loading, setloading] = useState(true);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setloading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    return (
-        <>
-            {loading
-                ? <div className="h-[calc(100vh-50px)] w-full flex items-center justify-center">
-                    <div className="middle2"></div>
-                </div>
-                : <div>
-                    <div className='d-flex flex-col col-12 mt-5  pb-5 gal-img-top' >
-                        <TopLeftBar
-                            topText={t('My Galary Image')}
-                            bottomText={t('We are glad to see you again!')}
-                        />
-
-                        {showAddGalaryImages || showEditGalaryImages ? (
-                            <div className='position-absolute' style={{ right: '20px' }} onClick={handleBackButton}>
-                                <Link to={isAdmin ? `/${selectedTab}/add` : `/addProparty/${selectedTab}/add`}>
-                                    <button onClick={() => { setIsEditSelectedProperty(false); setShowAddGalaryImages(true) }} className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px] flex items-center gap-[10px]'>{t('Back')} <IconArrowBackUp /></button>
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className='position-absolute' style={{ right: '20px' }}>
-                                <button onClick={() => { setIsEditSelectedProperty(false); setShowAddGalaryImages(true) }} className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px]'>{t('Add Gallery image')}</button>
-                            </div>
-                        )}
-                    </div>
-                    {showAddGalaryImages || showEditGalaryImages ? (
-                        <div className='wg-box pl-44 pr-29'>
-                            <div className='d-flex justify-content-between'>
-                                <h4>{t('Basic Information')}</h4>
-                            </div>
-                            <AddGalaryImage />
-                        </div>
-                    ) : (
-                        <div className="wg-box pl-44">
-                            {showAddGalaryImages ? (<AddGalaryImage />) : showEditGalaryImages ? (<AddGalaryImage />) : (
-                                <div className="table-listing-properties mb-40">
-                                    <TabHeader tabList={myTabHeader} />
-                                    <ul>
-                                        {dashboardTabData?.gallerylist?.map((item, index) => (
-                                            <>
-                                                <div className="my-properties-item item" key={index}>
-                                                    <div className="d-flex m-3" >
-                                                        <div className="d-flex items-center w-100">
-                                                            <div className='btn'>
-                                                                <img src={`${baseUrl}${item?.image}`} alt={`${item?.property_title}`} className='w-[75px] h-[75px] rounded' />
-                                                            </div>
-                                                            <div>
-                                                                <h6 style={{ fontWeight: "500" }} className="m-2">{item?.property_title}</h6>
-                                                                <h6 style={{ fontWeight: "400", fontSize: "15px" }} className="m-2">{item?.category_title}</h6>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div>
-                                                        <div onClick={() => {
-                                                            setEditSelectedMyGallaryImage(item);
-                                                            setIsEditSelectedProperty(true);
-                                                            setShowEditGalaryImages(true)
-                                                        }}>
-                                                            <ul className="wg-icon">
-                                                                <li className="edit-btns">
-                                                                    <i className="flaticon-edit"></i>
-                                                                </li>
-                                                            </ul>
-                                                        </div>
-                                                    </div>
-                                                </div>
-                                            </>
-                                        ))}
-                                        {dashboardTabData?.gallerylist?.length === 0 && (
-                                            <div style={{ height: "420px" }} className='align-items-center flex-column justify-content-center mt-5 d-flex '>
-                                                <h6 className='empty-message'>{t('Sorry, there is no any nearby')}</h6>
-                                                <h6 className='empty-message'>{t('category or data not found')}</h6>
-                                            </div>
-                                        )}
-
-                                    </ul>
-
-                                    {/* <div className='flex align-items-center justify-content-center h-100' >
-                                    {loading && (
-                                        <div className="preload preload-container" >
-                                            <div className="middle"></div>
-                                        </div>
-                                    )}
-                                </div> */}
-                                </div>
-                            )}
-                        </div>
-                    )}
-                </div>}
-        </>
-    )
-}
-
-const MYGalCat = ({ setShowEditGalaryCategory, setShowAddGalaryCategory, handleBackButton, showEditGalaryCategory, showAddGalaryCategory }) => {
-    const { setIsEditSelectedProperty, dashboardTabData, setEditSelectedMyGallaryCategory, selectedTab, isAdmin } = useContextex();
-    const { t } = useTranslation();
-    const myTabHeader = [t('Listing Title'), t('Action')]
-    const [loading, setloading] = useState(true);
-
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setloading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    return (
-        <>
-            {loading
-                ? <div className="h-[calc(100vh-50px)] w-full flex items-center justify-center">
-                    <div className="middle2"></div>
-                </div>
-                : <div>
-                    <div className='d-flex mob-dash col-12 flex-col pt-5 pb-5'>
-
-                        <TopLeftBar
-                            topText={t('My Galary Categories')}
-                            bottomText={t('We are glad to see you again!')}
-                        />
-                        {showAddGalaryCategory || showEditGalaryCategory ? (
-                            <div className='position-absolute' style={{ right: '20px' }} onClick={handleBackButton}>
-                                <Link to={isAdmin ? `/${selectedTab}/add` : `/addProparty/${selectedTab}/add`}>
-                                    <button onClick={() => { setIsEditSelectedProperty(true); setShowAddGalaryCategory(false) }} className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px] flex items-center gap-[10px]'>{t('Back')} <IconArrowBackUp /></button> {/* <p className="tf-button-primary style-black active" onClick={() => { setIsEditSelectedProperty(false); setShowAddGalaryCategory(false) }}> {t('Back')} <IconArrowBackUp /></p> */}
-                                </Link>
-                            </div>
-                        ) : (
-                            <div className='position-absolute' style={{ right: '20px' }}>
-                                <button onClick={() => { setIsEditSelectedProperty(false); setShowAddGalaryCategory(true) }} className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px]'>{t('Add Gallery Category')}</button>
-                            </div>
-                        )}
-                    </div>
-                    {showAddGalaryCategory || showEditGalaryCategory ? (
-                        <div className='wg-box pl-44 pr-29 '>
-                            <div className='d-flex justify-content-between'>
-                                <h4>{t('Basic Information')}</h4>
-                            </div>
-                            <AddGalleryCategory />
-                        </div>
-                    ) : (
-                        <div className="wg-box pl-44">
-                            {showAddGalaryCategory ? (<AddGalleryCategory />) : showEditGalaryCategory ? (<AddGalleryCategory />) : (
-                                <div className="table-listing-properties mb-40">
-                                    <TabHeader tabList={myTabHeader} />
-                                    <ul>
-                                        {dashboardTabData?.galcatlist?.map((item, index) => (
-                                            <li key={index}>
-                                                <div className="my-properties-item item">
-                                                    <div>
-                                                        <div className="property">
-                                                            <div className="image" style={{ height: '75px', width: '75px' }}>
-                                                                <div className="btn border h-100 w-100 bg-primary text-white d-flex align-items-center justify-content-center">
-                                                                    <IconPhotoPlus />
-                                                                </div>
-                                                            </div>
-
-                                                            <div>
-                                                                <div className="price">{item?.property_title}</div>
-                                                                <div className="title">
-                                                                    <p>{item?.cat_title}</p>
-                                                                </div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div onClick={() => {
-                                                        setIsEditSelectedProperty(true);
-                                                        setEditSelectedMyGallaryCategory(item)
-                                                        setShowEditGalaryCategory(true)
-                                                    }}>
-                                                        <ul className="wg-icon">
-                                                            <li className="edit-btns">
-                                                                <i className="flaticon-edit"></i>
-                                                            </li>
-                                                        </ul>
-                                                    </div>
-
-                                                </div>
-                                            </li>
-                                        ))}
-
-                                        {dashboardTabData?.galcatlist?.length === 0 && (
-                                            <div style={{ height: "420px" }} className='align-items-center flex-column justify-content-center mt-5 d-flex '>
-                                                <h6 className='empty-message'>{t('Sorry, there is no any nearby')}</h6>
-                                                <h6 className='empty-message'>{t('category or data not found')}</h6>
-                                            </div>
-                                        )}
-
-                                    </ul>
-                                </div>
-                            )}
-                        </div>
                     )}
                 </div>}
         </>
@@ -668,18 +351,62 @@ const MYBooking = ({ setShowReceiptTab, activeTabData, setActiveTab, activeTab, 
     );
 };
 
-const MYEnquiry = () => {
-    const { baseUrl, dashboardTabData } = useContextex();
+const MYCalendarSync = () => {
+    const { baseUrl, isUserId } = useContextex();
     const { t } = useTranslation();
-    const myTabHeader = [t('Listing Title'), t('Name'), t('Mobile Number')];
 
     const [loading, setloading] = useState(true);
-    useEffect(() => {
-        const timer = setTimeout(() => {
+    const [iCalList, setICalList] = useState([]);
+    const [editValues, setEditValues] = useState({});
+    const [savingId, setSavingId] = useState(null);
+
+    const fetchICalList = async () => {
+        try {
+            const response = await axios.post(`${baseUrl}user_api/u_ical_list.php?`, {
+                uid: isUserId,
+            }, { headers: { 'Content-Type': 'application/json' } });
+
+            if (response?.data?.ResponseCode === '200') {
+                const list = response?.data?.iCalList || [];
+                setICalList(list);
+                const initialValues = {};
+                list.forEach(item => { initialValues[item.prop_id] = item.external_ical_url || ''; });
+                setEditValues(initialValues);
+            }
+        } catch (err) {
+            console.error(err.message);
+        } finally {
             setloading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
+        }
+    };
+
+    useEffect(() => {
+        fetchICalList();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [isUserId]);
+
+    const handleSave = async (propId) => {
+        setSavingId(propId);
+        try {
+            const response = await axios.post(`${baseUrl}user_api/u_ical_save.php?`, {
+                uid: isUserId,
+                prop_id: propId,
+                external_ical_url: editValues[propId] || '',
+            }, { headers: { 'Content-Type': 'application/json' } });
+
+            const toastId = response?.data?.ResponseCode === '200' ? "success" : "error";
+            showToast({ title: response?.data?.ResponseMsg, id: toastId });
+        } catch (err) {
+            console.error(err.message);
+        } finally {
+            setSavingId(null);
+        }
+    };
+
+    const handleCopyExportUrl = (url) => {
+        navigator.clipboard.writeText(url);
+        showToast({ title: t('Export link copied - paste it into Airbnb/Booking.com'), id: 'success' });
+    };
 
     return (
         <>
@@ -690,194 +417,80 @@ const MYEnquiry = () => {
                 : <div className="">
                     <div className='d-flex mob-dash flex-col col-12 pt-5 pb-5'>
                         <TopLeftBar
-                            topText={t('My Enquiry')}
-                            bottomText={t('Your Enquiry Data')}
+                            topText={t('Calendar Sync')}
+                            bottomText={t('Connect Airbnb/Booking.com to avoid double-bookings. Pastes availability only - no pricing.')}
                         />
                     </div>
                     <div className="wg-box pl-44 pr-29 ">
-                        <div className="table-listing-properties mb-40">
-                            <TabHeader tabList={myTabHeader} />
+                        <div className="mb-40">
                             <ul>
-                                {dashboardTabData?.EnquiryData?.map((item, index) => (
-                                    <>
-                                        <div className="my-properties-item item" key={index}>
-                                            <div key={index} className="d-flex m-3">
-                                                <div className="d-flex w-100">
-                                                    <img className='rounded ' style={{ height: '75px', width: '75px' }} src={`${baseUrl}${item?.image}`} alt={item?.title} />
-                                                    <div className='d-flex justify-content-center align-items-center'>
-                                                        <h6 className="m-2">{item?.title}</h6>
-                                                    </div>
+                                {iCalList?.map((item) => (
+                                    <li key={item.prop_id} style={{ borderBottom: '1px solid #80808024', paddingBottom: '15px', marginBottom: '15px' }}>
+                                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'stretch', gap: '10px', padding: '20px 0' }}>
+                                            <h6 style={{ fontWeight: 600 }}>{item.title}</h6>
+
+                                            <div style={{ width: '100%' }}>
+                                                <label className='span-text' style={{ display: 'block', marginBottom: '5px' }}>{t('Import from Airbnb/Booking.com')}</label>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: '10px' }}>
+                                                    <input
+                                                        type="text"
+                                                        style={{ border: '1px solid black', width: '100%', minWidth: 0, boxSizing: 'border-box' }}
+                                                        placeholder={t('Paste their calendar (.ics) export URL here')}
+                                                        value={editValues[item.prop_id] ?? ''}
+                                                        onChange={(e) => setEditValues(prev => ({ ...prev, [item.prop_id]: e.target.value }))}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="tf-button-primary"
+                                                        disabled={savingId === item.prop_id}
+                                                        onClick={() => handleSave(item.prop_id)}
+                                                    >
+                                                        {savingId === item.prop_id ? t('Saving...') : t('Save')}
+                                                    </button>
                                                 </div>
                                             </div>
-                                            <div className="col-3 blog__popular__single-content ">
-                                                <p>{item?.name}</p>
-                                            </div>
-                                            <div className=" col-6 blog__popular__single-content ">
-                                                <p>{item?.mobile}</p>
+
+                                            <div style={{ width: '100%' }}>
+                                                <label className='span-text' style={{ display: 'block', marginBottom: '5px' }}>{t('Export to Airbnb/Booking.com')}</label>
+                                                <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', gap: '10px' }}>
+                                                    <input
+                                                        type="text"
+                                                        style={{ border: '1px solid black', width: '100%', minWidth: 0, boxSizing: 'border-box', color: '#808080' }}
+                                                        readOnly
+                                                        value={item.export_url}
+                                                        onClick={(e) => e.target.select()}
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        className="tf-button-primary style-black active"
+                                                        onClick={() => handleCopyExportUrl(item.export_url)}
+                                                    >
+                                                        {t('Copy')}
+                                                    </button>
+                                                </div>
                                             </div>
                                         </div>
-                                    </>
+                                    </li>
                                 ))}
 
-                                {dashboardTabData?.EnquiryData?.length === 0 && (
-                                    <div style={{ height: "430px" }} className='align-items-center justify-content-center mt-5 d-flex '>
-                                        <div>
-                                            <h4 className='empty-message'>{t('Go & Book your favorite service')}</h4>
-                                        </div>
+                                {iCalList?.length === 0 && (
+                                    <div style={{ height: "300px" }} className='align-items-center flex-column justify-content-center mt-5 d-flex '>
+                                        <h6 className='empty-message'>{t('Add a property first to set up calendar sync')}</h6>
                                     </div>
                                 )}
-
                             </ul>
-
                         </div>
-
                     </div>
                 </div>}
         </>
     )
 }
 
-const MYEarning = ({
-    myEarningData,
-    userCurrency,
-    userDashboardDetails,
-    setShowReceiptTab,
-    showReceiptTab,
-    handleBackButton,
-}) => {
-    const { t } = useTranslation();
-    const myTabHeader = [t('Listing Title'), t('Total Day'), t('Status'), t('P_Status'), t('Action')];
-    const { baseUrl, setBookingId, selectedTab, isAdmin, setCurrentPage } = useContextex();
-
-    const [loading, setloading] = useState(true);
-    useEffect(() => {
-        const timer = setTimeout(() => {
-            setloading(false);
-        }, 1000);
-        return () => clearTimeout(timer);
-    }, []);
-
-    const handleShowReceipt = (bookId) => {
-        setBookingId(bookId);
-        setShowReceiptTab(true);
-    };
-
-    const renderTabContent = () => {
-        if (showReceiptTab && selectedTab === 'My Earning') {
-            setCurrentPage('Earning')
-            return <Receipt />;
-        }
-
-        return (
-            <>
-                <div>
-
-                    <div className="table-listing-properties mb-40">
-                        <TabHeader tabList={myTabHeader} />
-                        <ul>
-                            {/* {myEarningData?.length > 0 ? ( */}
-                            {myEarningData?.map((item, index) => (
-                                <li key={index}>
-                                    <div className="my-properties-item item">
-                                        <div className="property">
-                                            <div className="image booking-image h-100 w-100">
-                                                <img
-                                                    src={`${baseUrl}${item?.prop_img}`}
-                                                    alt={item?.prop_title}
-                                                />
-                                            </div>
-                                            <div>
-                                                <div className="price">${item?.prop_price}</div>
-                                                <div className="title">
-                                                    <p>{item?.prop_title}</p>
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        <div>
-                                            <p>{item?.total_day} {t('Days')}</p>
-                                        </div>
-                                        <div>
-                                            <div className="box-status">{item?.book_status}</div>
-                                        </div>
-                                        <div>
-                                            <p>{item?.p_method_id === '2' ? t('Unpaid') : t('Paid')}</p>
-                                        </div>
-                                        <div>
-                                            <ul className="wg-icon" onClick={() => handleShowReceipt(item?.book_id)}>
-                                                <li className="p-3 edit-btns">
-                                                    <IconEye />
-                                                </li>
-                                            </ul>
-                                        </div>
-                                    </div>
-                                </li>
-                            ))}
-
-                            {myEarningData?.length === 0 && (
-                                <div style={{ height: "410px" }} className='align-items-center justify-content-center mt-5 d-flex '>
-                                    <div>
-                                        <h4 className='empty-message' >{t('Go & Book your favorite service')}</h4>
-                                    </div>
-                                </div>
-                            )}
-
-                        </ul>
-                    </div>
-                </div>
-            </>
-        );
-    };
-
-    return (
-        <>
-            {loading
-                ? <div className="h-[calc(100vh-50px)] w-full flex items-center justify-center">
-                    <div className="middle2"></div>
-                </div>
-                : <div className="">
-                    <div className="d-flex flex-col col-12 mob-dash pt-5 pb-5">
-
-                        <TopLeftBar
-                            topText={t('My Earning')}
-                            bottomText={t('We are glad to see you again!')}
-                        />
-
-                        {showReceiptTab && selectedTab === 'My Earning' ? (
-                            <div className='position-absolute' style={{ right: '20px' }} onClick={handleBackButton}>
-
-                                <Link to={isAdmin ? `/${selectedTab}/add` : `/addProparty/${selectedTab}/add`}>
-                                    <button onClick={() => setShowReceiptTab(false)} className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px] flex items-center gap-[10px]'>{t('Back')} <IconArrowBackUp /></button>
-                                </Link>
-
-                            </div>
-                        ) : (
-
-                            <div className='position-absolute' style={{ right: '20px' }}>
-                                <h4 className="style-black active">
-                                    {t('Total Earning')}{' '}
-                                    <h2 className="text-success">
-                                        {userCurrency}
-                                        {userDashboardDetails[5].report_data}
-                                    </h2>
-                                </h4>
-                            </div>
-
-                        )}
-
-                    </div>
-                    <div className="wg-box pl-44 pr-29">
-                        {renderTabContent()}
-                    </div>
-                </div>}
-        </>
-    );
-};
-
-const MYPayout = ({ showTransactionModal, setShowTransactionModal, activeForm, setIsOpenModal, isOpenModal, setSelectedTransactionData, userDashboardDetails }) => {
-    const { userCurrency } = useContextex();
+const MYPayout = ({ showTransactionModal, setShowTransactionModal, activeForm, setIsOpenModal, isOpenModal, setSelectedTransactionData, totalEarning, myEarningData, setShowReceiptTab, showReceiptTab, handleBackButton }) => {
+    const { userCurrency, baseUrl, setBookingId, selectedTab, isAdmin, setCurrentPage } = useContextex();
     const { t } = useTranslation();
     const myTabHeader = [t('Order ID'), t('Amount'), t('Req_Date'), t('Req_Type'), t('Status'), t('Action')]
+    const myEarningHeader = [t('Listing Title'), t('Total Day'), t('Status'), t('P_Status'), t('Action')];
 
     const [loading, setloading] = useState(true);
     useEffect(() => {
@@ -892,6 +505,16 @@ const MYPayout = ({ showTransactionModal, setShowTransactionModal, activeForm, s
         setShowTransactionModal(!showTransactionModal)
     }
 
+    const handleShowReceipt = (bookId) => {
+        setBookingId(bookId);
+        setShowReceiptTab(true);
+    };
+
+    const showingReceipt = showReceiptTab && selectedTab === 'My Payout';
+    if (showingReceipt) {
+        setCurrentPage('Earning')
+    }
+
     return (
         <>
             {loading
@@ -903,16 +526,81 @@ const MYPayout = ({ showTransactionModal, setShowTransactionModal, activeForm, s
                         <div className='col-sm-9 col-6 col-xs-9 col-md-8 col-lg-10 '>
                             <h3>{t('My Payout')}</h3>
                             <div className="text-content">{t('Your Total Earning is')} <span style={{ color: "red" }}>{userCurrency}
-                                {userDashboardDetails[5].report_data}</span>
+                                {totalEarning}</span>
                             </div>
                         </div>
 
-                        <div className='position-absolute' style={{ right: '20px' }}>
-                            <button onClick={() => setIsOpenModal(!isOpenModal)} className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px]'>{t('Request')}</button>
+                        {showingReceipt ? (
+                            <div className='position-absolute' style={{ right: '20px' }} onClick={handleBackButton}>
+                                <Link to={isAdmin ? `/${selectedTab}/add` : `/addProparty/${selectedTab}/add`}>
+                                    <button onClick={() => setShowReceiptTab(false)} className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px] flex items-center gap-[10px]'>{t('Back')} <IconArrowBackUp /></button>
+                                </Link>
+                            </div>
+                        ) : (
+                            <div className='position-absolute' style={{ right: '20px' }}>
+                                <button onClick={() => setIsOpenModal(!isOpenModal)} className='font-[500] text-[17px] bg-[#2D71FE] hover:bg-[#2d73fed2] text-white py-[10px] px-[20px] rounded-[50px]'>{t('Request')}</button>
+                            </div>
+                        )}
+                    </div>
+
+                    {showingReceipt ? <Receipt /> : (
+                    <>
+                    <div className="wg-box pl-44 pr-29 mb-20">
+                        <h4 style={{ marginBottom: "10px" }}>{t('Earnings')}</h4>
+                        <div className="table-listing-properties mb-40">
+                            <TabHeader tabList={myEarningHeader} />
+                            <ul>
+                                {myEarningData?.map((item, index) => (
+                                    <li key={index}>
+                                        <div className="my-properties-item item">
+                                            <div className="property">
+                                                <div className="image booking-image h-100 w-100">
+                                                    <img
+                                                        src={`${baseUrl}${item?.prop_img}`}
+                                                        alt={item?.prop_title}
+                                                    />
+                                                </div>
+                                                <div>
+                                                    <div className="price">${item?.prop_price}</div>
+                                                    <div className="title">
+                                                        <p>{item?.prop_title}</p>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <div>
+                                                <p>{item?.total_day} {t('Days')}</p>
+                                            </div>
+                                            <div>
+                                                <div className="box-status">{item?.book_status}</div>
+                                            </div>
+                                            <div>
+                                                <p>{item?.p_method_id === '2' ? t('Unpaid') : t('Paid')}</p>
+                                            </div>
+                                            <div>
+                                                <ul className="wg-icon" onClick={() => handleShowReceipt(item?.book_id)}>
+                                                    <li className="p-3 edit-btns">
+                                                        <IconEye />
+                                                    </li>
+                                                </ul>
+                                            </div>
+                                        </div>
+                                    </li>
+                                ))}
+
+                                {myEarningData?.length === 0 && (
+                                    <div style={{ height: "200px" }} className='align-items-center justify-content-center mt-5 d-flex '>
+                                        <div>
+                                            <h4 className='empty-message' >{t('Go & Book your favorite service')}</h4>
+                                        </div>
+                                    </div>
+                                )}
+                            </ul>
                         </div>
                     </div>
 
                     <div className="wg-box pl-44 pr-29 ">
+                        <h4 style={{ marginBottom: "10px" }}>{t('Payout')}</h4>
                         <div className="table-listing-properties mb-40">
                             <div className="mt-5 pl-44 pr-29">
                                 <div className="table-text-infor default">
@@ -968,6 +656,8 @@ const MYPayout = ({ showTransactionModal, setShowTransactionModal, activeForm, s
                             </div>
                         </div>
                     </div>
+                    </>
+                    )}
                 </div>}
 
         </>
@@ -984,6 +674,7 @@ function AddProparty() {
     const [isOpenModal, setIsOpenModal] = useState(null);
     const [reviewListData, setReviewListData] = useState(null)
     const [myEarningData, setMyEarningData] = useState(null)
+    const [totalEarning, setTotalEarning] = useState(0)
     const [, setSelectedId] = useState(null)
     const [sidebarData, setSidebarData] = useState(null)
     const [dashCard, setDashCard] = useState(null)
@@ -993,12 +684,6 @@ function AddProparty() {
     const [showReceiptTab, setShowReceiptTab] = useState(false)
     const [showAddPropertyData, setShowAddPropertyData] = useState(false)
     const [editAddPropertyData, setEditAddPropertyData] = useState(false)
-    const [showAddExtaImage, setShowAddExtaImage] = useState(false)
-    const [showEditExtaImage, setShowEditExtaImage] = useState(false)
-    const [showAddGalaryCategory, setShowAddGalaryCategory] = useState(false)
-    const [showEditGalaryCategory, setShowEditGalaryCategory] = useState(false)
-    const [showAddGalaryImages, setShowAddGalaryImages] = useState(false)
-    const [showEditGalaryImages, setShowEditGalaryImages] = useState(false)
     const [isCanvasActive, setIsCanvasActive] = useState(false);
     const [refetchPayout, setRefetchPayout] = useState(false);
     const [loading, setloading] = useState(true);
@@ -1030,7 +715,7 @@ function AddProparty() {
 
     const payoutData = activeForm;
 
-    const { isUserId, baseUrl, setCurrentPage, currentPage, isAdmin, setDashboardTabData, setUserPropertyList, setComplateCurrentBook, userCurrency, setSelectedTab, selectedTab, setMemberShipData } = useContextex();
+    const { isUserId, baseUrl, setCurrentPage, currentPage, isAdmin, setUserPropertyList, setComplateCurrentBook, setSelectedTab, selectedTab, setMemberShipData } = useContextex();
 
     useEffect(() => {
         var dashboard = function () {
@@ -1063,6 +748,7 @@ function AddProparty() {
                     setUserDashboardDetails(response?.data?.report_data || []);
                     setMinWithdraw(response?.data?.withdraw_limit || null);
                     setMemberShipData(response?.data?.is_subscribe || null);
+                    setTotalEarning(response?.data?.total_earning || 0);
                 }
             } catch (err) {
                 console.error(err.message);
@@ -1074,14 +760,7 @@ function AddProparty() {
 
 
     useEffect(() => {
-        const baseSidebarData = [{ title: 'Dashboard' }, ...userDashboardDetails, { title: 'Profile' }];
-        const adminSidebarData = [{ title: 'Dashboard' }, ...userDashboardDetails, { title: 'Profile' }, { title: 'Chat' }]
-
-        if (isAdmin) {
-            setSidebarData(adminSidebarData);
-        } else {
-            setSidebarData(baseSidebarData);
-        }
+        setSidebarData([{ title: 'Dashboard' }, ...userDashboardDetails, { title: 'Profile' }, { title: 'Chat' }]);
     }, [userDashboardDetails, isAdmin]);
 
     useEffect(() => {
@@ -1120,8 +799,8 @@ function AddProparty() {
     useEffect(() => {
         // Fetch country data when component mounts or isUserId changes
         const fetchAdminBookAsync = async () => {
-            const Activestatus = selectedTab === 'My Earning' ? 'completed' : activeTab
-            const storedData = selectedTab === 'My Earning' ? setMyEarningData : setActiveTabData
+            const Activestatus = selectedTab === 'My Payout' ? 'completed' : activeTab
+            const storedData = selectedTab === 'My Payout' ? setMyEarningData : setActiveTabData
             try {
                 const response = await axios.post(`${baseUrl}user_api/u_my_book.php?`, {
                     uid: isUserId,
@@ -1143,43 +822,6 @@ function AddProparty() {
     }, [isUserId, activeTab, selectedTab, showReceiptTab]);
 
 
-    useEffect(() => {
-        const fetchCountryDataAsync = async () => {
-            let endpoint = '';
-            switch (selectedTab) {
-                case 'My Extra Images':
-                    endpoint = 'u_extra_list.php';
-                    break;
-                case 'My Gallery Category':
-                    endpoint = 'u_gallery_cat_list.php';
-                    break;
-                case 'My Gallery Images':
-                    endpoint = 'gallery_list.php';
-                    break;
-                case 'My Enquiry':
-                    endpoint = 'u_my_enquiry.php';
-                    break;
-                default:
-                    break;
-            }
-            try {
-                const response = await axios.post(`${baseUrl}user_api/${endpoint}`, {
-                    uid: isUserId
-                }, {
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                });
-                if (response?.data?.ResponseCode === '200') {
-                    setDashboardTabData(response?.data)
-                }
-            } catch (err) {
-                console.error(err.message);
-            }
-        };
-
-        fetchCountryDataAsync();
-    }, [selectedTab, isUserId, showEditExtaImage, showAddExtaImage, showAddGalaryCategory, showEditGalaryCategory, showEditGalaryImages, showAddGalaryImages]);
 
 
     useEffect(() => {
@@ -1309,11 +951,6 @@ function AddProparty() {
 
     const handleBackButton = () => {
         // navigate(-1, { fallback: '/fallback' });
-        setShowEditGalaryImages(true);
-        setShowAddGalaryImages(true);
-        setShowEditGalaryCategory(true);
-        setShowEditExtaImage(true);
-        setShowAddExtaImage(true);
         setEditAddPropertyData(true);
         setShowAddPropertyData(true);
         setActiveTab('active');
@@ -1395,12 +1032,6 @@ function AddProparty() {
     const HandleChangePage = (title, index) => {
         setSelectedTab(title);
         setSelectedId(index + 1);
-        setShowEditGalaryImages(false);
-        setShowAddGalaryImages(true);
-        setShowEditGalaryCategory(true);
-        setShowAddGalaryCategory(true)
-        setShowEditExtaImage(true);
-        setShowAddExtaImage(true);
         setEditAddPropertyData(true);
         setShowAddPropertyData(true);
         setShowReceiptTab(false)
@@ -1468,36 +1099,6 @@ function AddProparty() {
                                     />
                                 )}
 
-                                {selectedTab === 'My Extra Images' && (
-                                    <MYExtraImage
-                                        setShowEditExtaImage={setShowEditExtaImage}
-                                        setShowAddExtaImage={setShowAddExtaImage}
-                                        handleBackButton={handleBackButton}
-                                        showEditExtaImage={showEditExtaImage}
-                                        showAddExtaImage={showAddExtaImage}
-                                    />
-                                )}
-
-                                {selectedTab === 'My Gallery Category' && (
-                                    <MYGalCat
-                                        setShowEditGalaryCategory={setShowEditGalaryCategory}
-                                        setShowAddGalaryCategory={setShowAddGalaryCategory}
-                                        handleBackButton={handleBackButton}
-                                        showEditGalaryCategory={showEditGalaryCategory}
-                                        showAddGalaryCategory={showAddGalaryCategory}
-                                    />
-                                )}
-
-                                {selectedTab === 'My Gallery Images' && (
-                                    <MYGAlImage
-                                        setShowEditGalaryImages={setShowEditGalaryImages}
-                                        handleBackButton={handleBackButton}
-                                        setShowAddGalaryImages={setShowAddGalaryImages}
-                                        showEditGalaryImages={showEditGalaryImages}
-                                        showAddGalaryImages={showAddGalaryImages}
-                                    />
-                                )}
-
                                 {selectedTab === 'My Booking' && (
                                     <MYBooking
                                         setShowReceiptTab={setShowReceiptTab}
@@ -1510,20 +1111,8 @@ function AddProparty() {
                                     />
                                 )}
 
-                                {selectedTab === 'My Enquiry' && (
-                                    <MYEnquiry />
-                                )}
-
-                                {selectedTab === 'My Earning' && (
-                                    <MYEarning
-                                        baseUrl={baseUrl}
-                                        myEarningData={myEarningData}
-                                        userCurrency={userCurrency}
-                                        userDashboardDetails={userDashboardDetails}
-                                        setShowReceiptTab={setShowReceiptTab}
-                                        showReceiptTab={showReceiptTab}
-                                        handleBackButton={handleBackButton}
-                                    />
+                                {selectedTab === 'Calendar Sync' && (
+                                    <MYCalendarSync />
                                 )}
 
                                 {selectedTab === 'Profile' && (
@@ -1537,7 +1126,11 @@ function AddProparty() {
                                         setIsOpenModal={setIsOpenModal}
                                         isOpenModal={isOpenModal}
                                         setSelectedTransactionData={setSelectedTransactionData}
-                                        userDashboardDetails={userDashboardDetails}
+                                        totalEarning={totalEarning}
+                                        myEarningData={myEarningData}
+                                        setShowReceiptTab={setShowReceiptTab}
+                                        showReceiptTab={showReceiptTab}
+                                        handleBackButton={handleBackButton}
                                         showTransactionModal={showTransactionModal}
                                     />
                                 )}
@@ -1562,7 +1155,7 @@ function AddProparty() {
                                                                 <li className="d-flex flex-column" key={index}>
                                                                     <div className="ratings">
                                                                         {[...Array(5)].map((_, i) => (
-                                                                            <i key={i} className="flaticon-star-1"></i>
+                                                                            <i key={i} className={i < Math.round(item?.total_rate) ? "flaticon-star-1" : "flaticon-star"}></i>
                                                                         ))}
                                                                         <p>({item?.total_rate} Out Of 5)</p>
                                                                     </div>

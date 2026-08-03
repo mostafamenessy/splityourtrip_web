@@ -16,7 +16,6 @@ function Header() {
 
     const token = localStorage.getItem('authToken');
     const { logout } = useAuth();
-    const isBuyPack = localStorage.getItem("isPackBuy");
     const showAddProperty = localStorage.getItem("addPropertyShow")
 
     const handleHome = () => {
@@ -41,16 +40,7 @@ function Header() {
 
     const HandleAddProparty = () => {
         setShow(false);
-
-        const localData = localStorage.getItem("loginUser");
-        const { UserLogin } = JSON.parse(localData);
-
-        if (UserLogin.is_subscribe === "1" || isAdmin) {
-            navigate('/addProparty');
-        } else {
-            navigate('/package_purchase');
-        }
-
+        navigate('/addProparty');
     }
 
     return (
@@ -100,8 +90,8 @@ function Header() {
 
 
                             {showAddProperty === "Yes" && isUserId && token && <div className="header-btn">
-                                <Link to={isBuyPack === '1' ? '/addProparty' : '/package_purchase'}>
-                                    <p className={`tf-button-default cursor-pointer ${currentPage === 'home' && 'style-white'} `}>{t('Add Proparty')}</p>
+                                <Link to="/addProparty">
+                                    <p className={`tf-button-default cursor-pointer ${currentPage === 'home' && 'style-white'} `}>{t('Add Property')}</p>
                                 </Link>
                             </div>}
 
@@ -163,7 +153,7 @@ function Header() {
                                             {isUserId && token ? (
                                                 <div className="header-btn" onClick={HandleAddProparty}>
 
-                                                    <a data-bs-dismiss="offcanvas" role="button" aria-expanded="false" className='mm-btn mm-btn--next mm-listitem__btn mm-listitem__text '>{t('Add Proparty')}</a>
+                                                    <a data-bs-dismiss="offcanvas" role="button" aria-expanded="false" className='mm-btn mm-btn--next mm-listitem__btn mm-listitem__text '>{t('Add Property')}</a>
 
                                                 </div>
                                             ) : (
