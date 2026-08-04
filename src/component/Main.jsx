@@ -200,7 +200,7 @@ function Main() {
                                                     <h1 className="wow fadeInUp" data-wow-delay="0.2s">
                                                         {t(`Browse Homes, Find Your Happiness`)}
                                                     </h1>
-                                                    <SearchField />
+                                                    <HeroSearchBar />
                                                 </div>
                                             </div>
                                         </div>
@@ -551,6 +551,105 @@ export const TabsCard = () => {
     )
 
 }
+
+export const HeroSearchBar = () => {
+    const { t } = useTranslation();
+    const navigate = useNavigate();
+    const { selectedCountryId } = useContextex();
+
+    const [location, setLocation] = useState('');
+    const [checkIn, setCheckIn] = useState('');
+    const [checkOut, setCheckOut] = useState('');
+
+    const today = new Date().toISOString().split('T')[0];
+
+    const handleCheckInChange = (e) => {
+        const value = e.target.value;
+        setCheckIn(value);
+        // Clear an out-of-range checkout rather than silently keeping an
+        // invalid (checkout <= checkin) date selected.
+        if (checkOut && value >= checkOut) {
+            setCheckOut('');
+        }
+    };
+
+    const handleSearch = (e) => {
+        e.preventDefault();
+        navigate('/product-all', {
+            state: {
+                searchQuery: { location: location.trim(), check_in: checkIn, check_out: checkOut },
+                selectedCountryId,
+            },
+        });
+    };
+
+    const fieldStyle = { display: 'flex', flexDirection: 'column', flex: '1 1 0', minWidth: 0, textAlign: 'start' };
+    const labelStyle = { fontSize: '12px', fontWeight: 600, color: '#8a8a8a', marginBottom: '4px' };
+    const inputStyle = { border: 'none', outline: 'none', fontSize: '15px', fontFamily: 'inherit', width: '100%', background: 'transparent', color: 'inherit' };
+    const dividerStyle = { width: '1px', alignSelf: 'stretch', background: 'rgba(0,0,0,0.1)', margin: '0 18px' };
+
+    return (
+        <form
+            onSubmit={handleSearch}
+            className="wow fadeInUp"
+            data-wow-delay="0.3s"
+            style={{
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0',
+                background: '#fff',
+                borderRadius: '100px',
+                padding: '10px 10px 10px 28px',
+                maxWidth: '820px',
+                width: '100%',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.12)',
+                flexWrap: 'wrap',
+            }}
+        >
+            <div style={fieldStyle}>
+                <label style={labelStyle}>{t('Location')}</label>
+                <input
+                    type="text"
+                    placeholder={t('Search by city or area...')}
+                    value={location}
+                    onChange={(e) => setLocation(e.target.value)}
+                    style={inputStyle}
+                />
+            </div>
+            <div style={dividerStyle}></div>
+            <div style={fieldStyle}>
+                <label style={labelStyle}>{t('Check In')}</label>
+                <input
+                    type="date"
+                    min={today}
+                    value={checkIn}
+                    onChange={handleCheckInChange}
+                    style={inputStyle}
+                />
+            </div>
+            <div style={dividerStyle}></div>
+            <div style={fieldStyle}>
+                <label style={labelStyle}>{t('Check Out')}</label>
+                <input
+                    type="date"
+                    min={checkIn || today}
+                    value={checkOut}
+                    onChange={(e) => setCheckOut(e.target.value)}
+                    disabled={!checkIn}
+                    style={inputStyle}
+                />
+            </div>
+            <button
+                type="submit"
+                className="tf-button-primary"
+                style={{ borderRadius: '100px', padding: '16px 28px', whiteSpace: 'nowrap', marginInlineStart: '14px', flexShrink: 0 }}
+            >
+                <i className="flaticon-magnifiying-glass" style={{ marginInlineEnd: '8px' }}></i>
+                {t('Search')}
+            </button>
+        </form>
+    );
+};
 
 export const SearchField = () => {
 

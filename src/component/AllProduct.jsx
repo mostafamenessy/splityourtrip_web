@@ -32,10 +32,19 @@ function AllProduct() {
     // into context on every app load.
     const tabsList = Location.state?.tabsList ?? contextTabsList;
     const selectedCountryId = Location.state?.selectedCountryId ?? contextSelectedCountryId;
+    // Set only when arriving from the landing-page hero search bar
+    // (location + optional check-in/check-out). Category tabs don't apply
+    // to a search result set, so they're hidden in this mode.
+    const searchQuery = Location.state?.searchQuery;
+    const isSearchMode = !!searchQuery;
 
     useEffect(() => {
-        fetchCountryDataAsync();
-    }, [selectedId, selectedCountryId]);
+        if (isSearchMode) {
+            fetchSearchResultsAsync();
+        } else {
+            fetchCountryDataAsync();
+        }
+    }, [selectedId, selectedCountryId, isSearchMode, searchQuery]);
 
     const fetchCountryDataAsync = async () => {
         try {
@@ -57,6 +66,29 @@ function AllProduct() {
 
         } catch (err) {
             console.error(err.message);
+        }
+    };
+
+    const fetchSearchResultsAsync = async () => {
+        try {
+            const response = await axios.post(`${baseUrl}user_api/u_search_availability.php?`, {
+                uid: isUserId || '0',
+                country_id: selectedCountryId ? selectedCountryId : 1,
+                location: searchQuery?.location || '',
+                check_in: searchQuery?.check_in || '',
+                check_out: searchQuery?.check_out || '',
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+            });
+
+            setLoading(false);
+            setTabCardData(response?.data?.Property_cat || []);
+            setData(response?.data?.Property_cat || []);
+        } catch (err) {
+            console.error(err.message);
+            setLoading(false);
         }
     };
 
@@ -117,26 +149,35 @@ function AllProduct() {
                                 <div className="row">
                                     <div className="col-12">
                                         <div className="content text-center">
-                                            <h2 className="wow fadeInUp">{t('Real Estate & Homes For Sale')}</h2>
+                                            <h2 className="wow fadeInUp">
+                                                {isSearchMode
+                                                    ? (searchQuery?.location ? t('Search results for "{{location}}"', { location: searchQuery.location }) : t('Search Results'))
+                                                    : t('Real Estate & Homes For Sale')}
+                                            </h2>
+                                            {isSearchMode && searchQuery?.check_in && searchQuery?.check_out && (
+                                                <p className="mt-[6px]">{searchQuery.check_in} &rarr; {searchQuery.check_out}</p>
+                                            )}
                                             <ul className="breadcrumbs wow fadeInUp">
                                             </ul>
                                         </div>
                                     </div>
                                 </div>
-                                <div className="widget-tabs style-1">
-                                    <div className="row">
-                                        <div className="col-12">
-                                            <ul className="widget-menu-tab">
-                                                {tabsList?.map((item) => (
-                                                    <li key={item?.id} className={`item-title d-flex align-items-center ${selectedId === item?.id ? 'active' : ''}`} onClick={() => setSelectedId(item?.id)}>
-                                                        <img src={baseUrl + item.img} className='w-[25px] me-[10px]' alt="" />
-                                                        <span className="inner">{item?.title}</span>
-                                                    </li>
-                                                ))}
-                                            </ul>
+                                {!isSearchMode && (
+                                    <div className="widget-tabs style-1">
+                                        <div className="row">
+                                            <div className="col-12">
+                                                <ul className="widget-menu-tab">
+                                                    {tabsList?.map((item) => (
+                                                        <li key={item?.id} className={`item-title d-flex align-items-center ${selectedId === item?.id ? 'active' : ''}`} onClick={() => setSelectedId(item?.id)}>
+                                                            <img src={baseUrl + item.img} className='w-[25px] me-[10px]' alt="" />
+                                                            <span className="inner">{item?.title}</span>
+                                                        </li>
+                                                    ))}
+                                                </ul>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
+                                )}
                             </div>
                         </div>
 
@@ -195,8 +236,17 @@ function AllProduct() {
                                     ))}
                                     {tabCardData?.length === 0 &&
                                         <div className="col-12 d-flex flex-column justify-content-center align-items-center" style={{ height: '300px' }}>
-                                            <h6 className='empty-message'>Sorry, there is no any nearby</h6>
-                                            <h6 className='empty-message'>category or data not found</h6>
+                                            {isSearchMode ? (
+                                                <>
+                                                    <h6 className='empty-message'>{t('No properties available for that search')}</h6>
+                                                    <h6 className='empty-message'>{t('Try a different location or date range')}</h6>
+                                                </>
+                                            ) : (
+                                                <>
+                                                    <h6 className='empty-message'>{t('Sorry, there is no any nearby')}</h6>
+                                                    <h6 className='empty-message'>{t('category or data not found')}</h6>
+                                                </>
+                                            )}
                                         </div>
                                     }
                                 </div>
