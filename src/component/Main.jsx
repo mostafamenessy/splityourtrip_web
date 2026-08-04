@@ -555,13 +555,39 @@ export const TabsCard = () => {
 export const HeroSearchBar = () => {
     const { t } = useTranslation();
     const navigate = useNavigate();
-    const { selectedCountryId } = useContextex();
+    const { selectedCountryId, baseUrl } = useContextex();
 
     const [location, setLocation] = useState('');
     const [checkIn, setCheckIn] = useState('');
     const [checkOut, setCheckOut] = useState('');
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     const today = new Date().toISOString().split('T')[0];
+
+    useEffect(() => {
+        const keyword = location.trim();
+        if (!keyword) {
+            setSuggestions([]);
+            return;
+        }
+        // Debounced - avoids firing a request on every keystroke.
+        const timer = setTimeout(async () => {
+            try {
+                const response = await axios.post(`${baseUrl}user_api/u_location_suggest.php?`, {
+                    keyword,
+                    country_id: selectedCountryId || 1,
+                }, {
+                    headers: { 'Content-Type': 'application/json' },
+                });
+                setSuggestions(response?.data?.suggestions || []);
+            } catch (err) {
+                console.error(err.message);
+            }
+        }, 300);
+
+        return () => clearTimeout(timer);
+    }, [location, selectedCountryId, baseUrl]);
 
     const handleCheckInChange = (e) => {
         const value = e.target.value;
@@ -571,6 +597,12 @@ export const HeroSearchBar = () => {
         if (checkOut && value >= checkOut) {
             setCheckOut('');
         }
+    };
+
+    const handleSelectSuggestion = (value) => {
+        setLocation(value);
+        setSuggestions([]);
+        setShowSuggestions(false);
     };
 
     const handleSearch = (e) => {
@@ -583,7 +615,7 @@ export const HeroSearchBar = () => {
         });
     };
 
-    const fieldStyle = { display: 'flex', flexDirection: 'column', flex: '1 1 0', minWidth: 0, textAlign: 'start' };
+    const fieldStyle = { display: 'flex', flexDirection: 'column', flex: '1 1 0', minWidth: 0, textAlign: 'start', position: 'relative' };
     const labelStyle = { fontSize: '12px', fontWeight: 600, color: '#8a8a8a', marginBottom: '4px' };
     const inputStyle = { border: 'none', outline: 'none', fontSize: '15px', fontFamily: 'inherit', width: '100%', background: 'transparent', color: 'inherit' };
     const dividerStyle = { width: '1px', alignSelf: 'stretch', background: 'rgba(0,0,0,0.1)', margin: '0 18px' };
@@ -606,16 +638,60 @@ export const HeroSearchBar = () => {
                 flexWrap: 'wrap',
             }}
         >
-            <div style={fieldStyle}>
-                <label style={labelStyle}>{t('Location')}</label>
-                <input
-                    type="text"
-                    placeholder={t('Search by city or area...')}
-                    value={location}
-                    onChange={(e) => setLocation(e.target.value)}
-                    style={inputStyle}
-                />
-            </div>
+            <OutsideClickHandler onOutsideClick={() => setShowSuggestions(false)}>
+                <div style={fieldStyle}>
+                    <label style={labelStyle}>{t('Location')}</label>
+                    <input
+                        type="text"
+                        placeholder={t('Search by city or area...')}
+                        value={location}
+                        onChange={(e) => {
+                            setLocation(e.target.value);
+                            setShowSuggestions(true);
+                        }}
+                        onFocus={() => setShowSuggestions(true)}
+                        autoComplete="off"
+                        style={inputStyle}
+                    />
+                    {showSuggestions && suggestions.length > 0 && (
+                        <ul
+                            style={{
+                                position: 'absolute',
+                                top: 'calc(100% + 14px)',
+                                left: '-28px',
+                                width: '280px',
+                                background: '#fff',
+                                borderRadius: '12px',
+                                boxShadow: '0 10px 30px rgba(0,0,0,0.15)',
+                                padding: '8px',
+                                margin: 0,
+                                listStyle: 'none',
+                                zIndex: 30,
+                                textAlign: 'start',
+                            }}
+                        >
+                            {suggestions.map((item) => (
+                                <li
+                                    key={item}
+                                    onClick={() => handleSelectSuggestion(item)}
+                                    style={{
+                                        padding: '10px 12px',
+                                        borderRadius: '8px',
+                                        cursor: 'pointer',
+                                        fontSize: '14px',
+                                        color: '#1a1a1a',
+                                    }}
+                                    onMouseEnter={(e) => { e.currentTarget.style.background = '#f2f2f2'; }}
+                                    onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+                                >
+                                    <i className="flaticon-location" style={{ marginInlineEnd: '8px' }}></i>
+                                    {item}
+                                </li>
+                            ))}
+                        </ul>
+                    )}
+                </div>
+            </OutsideClickHandler>
             <div style={dividerStyle}></div>
             <div style={fieldStyle}>
                 <label style={labelStyle}>{t('Check In')}</label>
