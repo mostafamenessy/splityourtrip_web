@@ -132,7 +132,6 @@ const GalleryUpload = ({ existingImages, newFiles, baseUrl, onAddFiles, onRemove
 const AddPropartyForm = () => {
     const { t } = useTranslation();
     const {
-        propertyType,
         countryData,
         baseUrl,
         isUserId,
@@ -142,6 +141,7 @@ const AddPropartyForm = () => {
         setCountryListData
     } = useContextex();
 
+    const [propertyTypeData, setPropertyTypeData] = useState([]);
     const [selectedCountry, setSelectedCountry] = useState('');
     const [selectedPropertyType, setSelectedPropertyType] = useState('');
     const [selectedPropertyStatus, setSelectedPropertyStatus] = useState('');
@@ -301,6 +301,29 @@ const AddPropartyForm = () => {
         fetchCountryDataAsync();
     }, [isUserId]);
 
+    useEffect(() => {
+        // Fetched independently here rather than relying on the shared
+        // context value the home page populates - navigating straight to
+        // this form (bookmarked, refreshed, or deep-linked) without having
+        // visited the home page first otherwise left it empty.
+        const fetchPropertyTypeAsync = async () => {
+            try {
+                const response = await axios.post(`${baseUrl}user_api/u_property_type.php?`, {}, {
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                });
+                if (response?.data?.ResponseCode === '200') {
+                    setPropertyTypeData(response?.data?.typelist || []);
+                }
+            } catch (err) {
+                console.error(err.message);
+            }
+        };
+
+        fetchPropertyTypeAsync();
+    }, []);
+
     const resetForm = () => {
         setSelectedCountry('');
         setSelectedPropertyType('');
@@ -327,6 +350,7 @@ const AddPropartyForm = () => {
         setMappedFacilities([]);
         setCheckedFacilities([])
         setGalleryFiles([]);
+        setImportUrl('');
     };
 
     const validatePropInputs = () => {
@@ -407,6 +431,18 @@ const AddPropartyForm = () => {
         }
     };
 
+    const registerImportSource = async (propId) => {
+        if (!importUrl.trim()) return;
+        try {
+            await axios.post(`${baseUrl}user_api/u_register_import_source.php?`, {
+                prop_id: propId,
+                source_url: importUrl.trim(),
+            }, { headers: { 'Content-Type': 'application/json' } });
+        } catch (err) {
+            console.error(err.message);
+        }
+    };
+
     const uploadGalleryFiles = async (propId) => {
         if (!galleryFiles.length) return;
 
@@ -449,7 +485,14 @@ const AddPropartyForm = () => {
                     prop_address: data.address || prev.prop_address,
                     prop_city: data.city || prev.prop_city,
                     prop_rating: data.rating != null ? String(data.rating) : prev.prop_rating,
+                    prop_no_of_beds: data.beds != null ? String(data.beds) : prev.prop_no_of_beds,
+                    prop_no_of_bath: data.bathrooms != null ? String(data.bathrooms) : prev.prop_no_of_bath,
+                    prop_capacity: data.capacity != null ? String(data.capacity) : prev.prop_capacity,
                 }));
+
+                if (data.latitude != null && data.longitude != null) {
+                    setPosition({ latitude: data.latitude, longitude: data.longitude });
+                }
 
                 // Default new imports to Egypt - the vast majority of
                 // listings on this platform are Egyptian, and neither
@@ -463,7 +506,10 @@ const AddPropartyForm = () => {
                     setGalleryFiles(images.slice(1));
                 }
 
-                showToast({ title: t('Imported - please review and complete price, beds/baths and facilities below'), id: 'success' });
+                const locationNote = data.latLngApproximate
+                    ? t('Imported - location is approximate, please confirm it\'s correct. Review price and facilities below.')
+                    : t('Imported - please review and complete price and facilities below');
+                showToast({ title: locationNote, id: 'success' });
             } else {
                 showToast({ title: data?.ResponseMsg || 'Could not import that listing', id: 'error' });
             }
@@ -548,6 +594,9 @@ const AddPropartyForm = () => {
                 const propId = isEditSelectedProperty ? editSelectedProperty?.id : response?.data?.prop_id;
                 if (propId) {
                     await uploadGalleryFiles(propId);
+                    if (!isEditSelectedProperty) {
+                        await registerImportSource(propId);
+                    }
                 }
                 showToast({ title: response?.data?.ResponseMsg, id: "success" });
                 resetForm();
@@ -673,7 +722,7 @@ const AddPropartyForm = () => {
                     <div className='w-100'>
                         <SelectField
                             label="Property Type"
-                            options={propertyType?.map(item => ({ value: item?.id, label: item?.title }))}
+                            options={propertyTypeData?.map(item => ({ value: item?.id, label: item?.title }))}
                             selectedValue={selectedPropertyType}
                             onSelect={handleSelect(setSelectedPropertyType)}
                             error={errors.selectedPropertyType}
